@@ -1,14 +1,14 @@
 @echo off
 REM ============================================
-REM Aimis - Virtual Office - Launcher
+REM I.R.I.S. - Virtual Office - Launcher
 REM ============================================
 
-title Aimis - Virtual Office
+title I.R.I.S. - Virtual Office
 
 cd /d "%~dp0"
 
 echo.
-echo   Aimis - Virtual Office
+echo   I.R.I.S. - Virtual Office
 echo.
 echo [1] Launch Dev Mode (API + Vite)
 echo [2] Launch Packaged exe (if exists)
@@ -19,24 +19,30 @@ echo.
 echo ============================================
 set /p choice=Choose [1-3]:
 
-if "%choice%"=="1" (
-    echo Launching Dev Mode...
-    python launcher.py
-) else if "%choice%"=="2" (
-    if exist "dist\Aimis.exe" (
-        echo Launching Aimis.exe...
-        start "" "dist\Aimis.exe"
-    ) else (
-        echo dist\Aimis.exe not found!
-        echo Please run the build script first, or choose 1.
-        pause
-    )
-) else if "%choice%"=="3" (
-    echo Launching API Server...
-    python -m server.main
-) else if "%choice%"=="0" (
-    exit
+if "%choice%"=="1" goto dev
+if "%choice%"=="2" goto packaged
+if "%choice%"=="3" goto api
+if "%choice%"=="0" exit
+
+:dev
+echo Starting Development Mode...
+start cmd /k "python -m server.main"
+start cmd /k "cd desktop && npm run dev"
+goto end
+
+:packaged
+echo Starting Packaged Application...
+if exist "dist\iris.exe" (
+    start "" "dist\iris.exe"
 ) else (
-    echo Invalid choice!
-    pause
+    echo Packaged application not found. Please run build first.
 )
+goto end
+
+:api
+echo Starting API Server Only...
+python -m server.main
+goto end
+
+:end
+pause

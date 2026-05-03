@@ -1,24 +1,24 @@
 @echo off
 REM ============================================
-REM Aimis - Build Script
+REM I.R.I.S. Build Script
 REM 1. Build Frontend (Vite)
 REM 2. Build Backend (PyInstaller)
 REM 3. Build Electron App (Optional)
 REM ============================================
 
-title Aimis - Build Script
+title I.R.I.S. - Build Script
 cd /d "%~dp0"
 
 echo.
 echo ============================================
-echo   Aimis - Full Build Process
+echo   I.R.I.S. - Full Build Process
 echo ============================================
 echo.
 
 REM Check Node.js
 where node >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Node.js not found! Please install Node.js first.
+    echo Error: Node.js not found. Please install Node.js 18+
     pause
     exit /b 1
 )
@@ -26,85 +26,51 @@ if errorlevel 1 (
 REM Check Python
 where python >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Python not found! Please install Python first.
+    echo Error: Python not found. Please install Python 3.8+
     pause
     exit /b 1
 )
 
-echo [1/4] Install Dependencies...
-echo.
-
+echo [1/4] Installing frontend dependencies...
 cd desktop
-if not exist "node_modules" (
-    echo Installing desktop dependencies...
-    call npm install
+call npm install
+if errorlevel 1 (
+    echo Error: npm install failed
+    pause
+    exit /b 1
 )
-cd ..
 
-echo.
-echo [2/4] Build Frontend (Vite)...
-echo.
-
-cd desktop
+echo [2/4] Building frontend...
 call npm run build
 if errorlevel 1 (
-    echo [ERROR] Frontend build failed!
+    echo Error: Frontend build failed
     pause
     exit /b 1
 )
 cd ..
 
-echo.
-echo [3/4] Pack Backend (PyInstaller)...
-echo.
-
-REM Check PyInstaller
-python -c "import PyInstaller" >nul 2>&1
+echo [3/4] Installing backend dependencies...
+pip install -r agent_core\requirements.txt
+pip install pyinstaller
 if errorlevel 1 (
-    echo Installing PyInstaller...
-    pip install pyinstaller
-)
-
-python -m PyInstaller build_launcher.spec --clean
-if errorlevel 1 (
-    echo [ERROR] Backend packing failed!
+    echo Error: Backend dependencies installation failed
     pause
     exit /b 1
 )
 
-echo.
-echo [4/4] Build Electron App (Optional)...
-echo.
-choice /C YN /M "Continue building Electron app"
-if errorlevel 2 goto done
-
-cd desktop
-if not exist "node_modules" (
-    echo Installing desktop dependencies...
-    call npm install
-)
-
-REM Make sure electron-builder is installed
-npm list electron-builder >nul 2>&1
+echo [4/4] Building backend executable...
+pyinstaller build_launcher.spec
 if errorlevel 1 (
-    echo Installing electron-builder...
-    npm install --save-dev electron-builder
+    echo Error: Backend build failed
+    pause
+    exit /b 1
 )
 
-call npm run electron:build
-if errorlevel 1 (
-    echo [ERROR] Electron build failed!
-)
-cd ..
-
-:done
 echo.
 echo ============================================
 echo   Build Complete!
 echo ============================================
 echo.
-echo Output Files:
-echo   - dist\Aimis.exe              (Standalone Launcher)
-echo   - desktop\build\              (Electron App)
+echo Output: dist\iris.exe
 echo.
 pause
