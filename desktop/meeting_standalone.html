@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>爱弥�?�?智能会议�?/title>
+<style>
+:root {
+  --bg-base:#0f0f1a; --bg-surface:#13132a; --bg-hover:#1a1a3a;
+  --bg-active:#1e1e45; --bg-inset:#0a0a1a;
+  --border:#1e1e3f; --border-hover:#2a2a5a;
+  --accent:#4f46e5; --accent-light:#818cf8; --accent-border:rgba(129,140,248,0.27);
+  --text:#e0e0e0; --text-sec:#aaa; --text-dim:#888; --text-faint:#666; --text-dark:#444;
+  --green:#34d399; --red:#f87171; --yellow:#fbbf24; --blue:#60a5fa; --pink:#f472b6;
+  --c-iris:#4f46e5; --c-codey:#059669; --c-scribe:#d97706; --c-system:#f59e0b;
+  --sidebar-w:260px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  background:var(--bg-base);color:var(--text);height:100vh;overflow:hidden
+}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+
+.app{display:flex;height:100vh}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--bg-surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.sidebar-header{padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.server-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px rgba(74,222,128,.4)}
+.sidebar-title{font-size:13px;font-weight:600;color:var(--text-sec);letter-spacing:.5px;flex:1}
+
+.sidebar-search{padding:8px 12px;border-bottom:1px solid var(--border)}
+.search-input{width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--border-hover);background:var(--bg-base);color:var(--text);font-size:12px;font-family:inherit;outline:none}
+.search-input:focus{border-color:var(--accent-light)}
+.search-input::placeholder{color:var(--text-dark)}
+
+.sidebar-actions{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.btn-primary{width:100%;padding:8px 12px;border-radius:8px;font-size:13px;cursor:pointer;background:var(--accent);color:#fff;border:none;font-weight:500}
+.btn-primary:hover{background:#6366f1}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-template{padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;background:transparent;color:var(--text-dim);border:1px solid var(--border-hover);font-family:inherit}
+.btn-template:hover{background:var(--bg-hover);color:var(--text-sec)}
+.btn-template.active{background:var(--bg-active);border-color:var(--accent-light);color:var(--accent-light)}
+.template-row{display:flex;gap:4px;flex-wrap:wrap}
+
+.meeting-list-label{font-size:11px;font-weight:600;text-transform:uppercase;color:var(--text-dark);letter-spacing:.5px;padding:8px 14px 4px;display:flex;justify-content:space-between}
+.meeting-list{flex:1;overflow-y:auto;padding:4px 12px}
+.meeting-empty{font-size:12px;color:var(--text-dark);text-align:center;padding:20px 0}
+
+.meeting-item{width:100%;text-align:left;padding:8px 10px;border-radius:6px;font-size:12px;cursor:pointer;background:transparent;color:var(--text-sec);border:1px solid transparent;margin-bottom:4px;transition:all .15s;font-family:inherit}
+.meeting-item:hover{background:var(--bg-hover);border-color:var(--border-hover)}
+.meeting-item.active{background:var(--bg-active);border-color:var(--accent-border);color:var(--accent-light)}
+.meeting-item .name{display:block;font-weight:500;font-size:11px;margin-bottom:2px}
+.meeting-item .meta{display:block;font-size:10px;color:var(--text-dim)}
+.meeting-item .tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-top:2px}
+.tag-consensus{background:#065f4622;color:var(--green);border:1px solid var(--green-border)}
+.tag-discussing{background:#1a3a5c22;color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-surface);border-bottom:2px solid var(--accent-light)}
+.header-info{display:flex;align-items:center;gap:8px;flex:1}
+.header-icon{font-size:20px}
+.header-title{font-size:15px;font-weight:600}
+.header-sub{font-size:11px;color:var(--text-dim)}
+.header-actions{display:flex;align-items:center;gap:8px}
+.header-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim)}
+.status-dot{width:8px;height:8px;border-radius:50%}
+.status-dot.running{background:var(--green);animation:pulse 1.5s infinite}
+.status-dot.idle{background:var(--text-faint)}
+.status-dot.done{background:var(--accent-light)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.btn-export{padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;background:transparent;color:var(--text-dim);border:1px solid var(--border-hover);font-family:inherit;text-decoration:none}
+.btn-export:hover{background:var(--bg-hover);color:var(--text-sec)}
+
+/* Feed */
+.feed{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--bg-inset)}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-dark);gap:8px}
+.empty-icon{font-size:48px;opacity:.5}
+.empty-text{font-size:15px}
+.empty-hint{font-size:12px;color:var(--text-dark)}
+.entry{display:flex;gap:10px;max-width:90%}
+.entry.system,.entry.iris,.entry.codey,.entry.scribe{align-self:flex-start}
+.avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;color:#fff}
+.avatar.system{background:var(--c-system)}.avatar.iris{background:var(--c-iris)}
+.avatar.codey{background:var(--c-codey)}.avatar.scribe{background:var(--c-scribe)}
+.body{min-width:0;flex:1}
+.meta{display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap}
+.author{font-size:12px;font-weight:600}
+.time{font-size:10px;color:var(--text-faint)}
+.type-badge{font-size:10px;color:var(--text-dim);background:var(--bg-active);padding:1px 6px;border-radius:4px}
+.content{font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;background:var(--bg-surface);border-radius:10px;padding:10px 14px;border:1px solid #252545}
+.loading{color:var(--text-dim);animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Controls */
+.controls{padding:10px 16px;border-top:1px solid var(--border);background:var(--bg-surface);display:flex;gap:8px;flex-wrap:wrap}
+.control-btn{padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid var(--border);transition:all .15s;font-family:inherit;font-weight:500}
+.control-btn:disabled{opacity:.4;cursor:not-allowed}
+.control-btn.discuss{background:#1a3a5c;color:var(--blue);border-color:rgba(30,64,175,.27)}
+.control-btn.discuss:hover{background:#1e4a6e}
+.control-btn.judge{background:#3a1a3a;color:var(--red);border-color:rgba(157,23,77,.27)}
+.control-btn.judge:hover{background:#4a2a4a}
+.control-btn.summary{background:#1a3a2a;color:var(--green);border-color:rgba(4,120,87,.27)}
+.control-btn.summary:hover{background:#1e4a3a}
+
+/* Summary card */
+.summary-card{background:var(--bg-surface);border-radius:10px;padding:14px;border:1px solid var(--accent-border)}
+.summary-card h3{font-size:14px;margin-bottom:8px;color:var(--accent-light)}
+.summary-card div{font-size:13px;margin:4px 0;color:var(--text-sec)}
+.summary-card ul{padding-left:20px;margin:4px 0}
+.summary-card li{font-size:13px;color:var(--text-sec);margin:2px 0}
+
+/* Stats bar */
+.stats-bar{display:flex;gap:16px;padding:4px 16px;background:var(--bg-base);border-top:1px solid var(--border);font-size:11px;color:var(--text-dark)}
+.stats-bar span{display:flex;align-items:center;gap:4px}
+.stats-bar .num{color:var(--text-dim);font-weight:600}
+
+/* Log */
+.log{font-size:11px;color:var(--text-dark);padding:4px 16px;background:var(--bg-base);border-top:1px solid var(--border);text-align:center}
+
+/* Dialog */
+.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100}
+.dialog-box{background:var(--bg-surface);border:1px solid var(--border-hover);border-radius:12px;padding:20px;width:420px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.dialog-box h3{font-size:16px;margin-bottom:8px}
+.dialog-box p{font-size:13px;color:var(--text-dim);margin-bottom:8px}
+.dialog-box textarea{width:100%;box-sizing:border-box;background:var(--bg-base);border:1px solid var(--border-hover);border-radius:8px;color:var(--text);font-size:13px;padding:10px;resize:vertical;outline:none;font-family:inherit}
+.dialog-box textarea:focus{border-color:var(--accent-light)}
+.dialog-box select{width:100%;background:var(--bg-base);border:1px solid var(--border-hover);border-radius:8px;color:var(--text);font-size:13px;padding:8px 10px;outline:none;font-family:inherit;margin-bottom:8px}
+.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.dialog-btn{padding:7px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit}
+.dialog-btn.cancel{background:transparent;color:var(--text-dim);border:1px solid var(--border-hover)}
+.dialog-btn.confirm{background:var(--accent);color:#fff;border:none}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="server-dot"></span>
+      <span class="sidebar-title">iris Meeting</span>
+    </div>
+    <div class="sidebar-search">
+      <input class="search-input" id="searchInput" placeholder="Search meetings..." oninput="searchMeetings()">
+    </div>
+    <div class="sidebar-actions">
+      <button class="btn-primary" id="btnNew" onclick="openNewMeeting()">+ New Meeting</button>
+      <div class="template-row">
+        <button class="btn-template" data-tpl="" onclick="selectTemplate(this,'')">All</button>
+        <button class="btn-template" data-tpl="tech-review" onclick="selectTemplate(this,'tech-review')">Review</button>
+        <button class="btn-template" data-tpl="planning" onclick="selectTemplate(this,'planning')">Plan</button>
+        <button class="btn-template" data-tpl="brainstorm" onclick="selectTemplate(this,'brainstorm')">Brain</button>
+      </div>
+    </div>
+    <div class="meeting-list-label">
+      <span>Meetings</span>
+      <span id="meetingCount">0</span>
+    </div>
+    <div class="meeting-list" id="meetingList"></div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="header">
+      <div class="header-info">
+        <span class="header-icon" id="hIcon">🏛�?/span>
+        <span>
+          <div class="header-title" id="hTitle">Meeting Room</div>
+          <div class="header-sub" id="hSub">Select a meeting</div>
+        </span>
+      </div>
+      <div class="header-actions" id="headerActions" style="display:none">
+        <a class="btn-export" id="exportLink" download>Export MD</a>
+        <div class="header-status">
+          <span class="status-dot idle" id="statusDot"></span>
+          <span id="statusText">Idle</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="feed" id="feed">
+      <div class="empty-state">
+        <div class="empty-icon">🏛�?/div>
+        <div class="empty-text">No meeting selected</div>
+        <div class="empty-hint">Click "+ New Meeting" to start</div>
+      </div>
+    </div>
+
+    <div class="controls" id="controls" style="display:none">
+      <button class="control-btn discuss" id="btnDiscuss" onclick="startAutoDiscuss()">Auto Discuss</button>
+      <button class="control-btn judge" id="btnJudge" onclick="judgeConsensus()">Judge</button>
+      <button class="control-btn summary" id="btnSummary" onclick="generateSummary()">Summary</button>
+    </div>
+
+    <div class="stats-bar" id="statsBar">
+      <span>Meetings: <span class="num" id="sTotal">-</span></span>
+      <span>Done: <span class="num" id="sDone">-</span></span>
+      <span>Consensus: <span class="num" id="sConsensus">-</span></span>
+      <span>Total Rounds: <span class="num" id="sRounds">-</span></span>
+    </div>
+
+    <div class="log" id="log">Ready</div>
+  </main>
+</div>
+
+<!-- New Meeting Dialog -->
+<div class="dialog-overlay" id="dialogOverlay" style="display:none" onclick="closeDialog(event)">
+  <div class="dialog-box" onclick="e=>e.stopPropagation()">
+    <h3>Start New Meeting</h3>
+    <select id="templateSelect">
+      <option value="">Custom (no template)</option>
+      <option value="tech-review">Tech Review �?代码审查/架构评审</option>
+      <option value="planning">Planning �?项目规划/任务拆解</option>
+      <option value="postmortem">Postmortem �?项目复盘</option>
+      <option value="brainstorm">Brainstorm �?头脑风暴</option>
+    </select>
+    <p>Topic or issue:</p>
+    <textarea id="topicInput" rows="3" placeholder="e.g., Discuss project architecture..." style="margin-bottom:8px"></textarea>
+    <div id="agentSuggest" style="margin-bottom:8px;display:none">
+      <p style="font-size:12px;margin-bottom:4px">Suggested colleagues: <span id="agentReason" style="color:var(--text-dark);font-style:italic"></span></p>
+      <div id="agentList"></div>
+    </div>
+    <div class="dialog-actions">
+      <button class="dialog-btn cancel" onclick="closeDialog()">Cancel</button>
+      <button class="dialog-btn confirm" id="btnStart" onclick="startMeeting()">Start Meeting</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:8765';
+const WS = 'ws://127.0.0.1:8765';
+let agents = [], meetings = [], activeRoomId = null, meetingRunning = false, activeTemplate = '';
+let ws = null, wsReconnectTimer = null;
+
+function connectWs(roomId) {
+  if (ws) { ws.onclose = null; ws.close(); ws = null; }
+  if (!roomId) return;
+  clearTimeout(wsReconnectTimer);
+
+  ws = new WebSocket(`${WS}/ws/${roomId}`);
+  ws.onopen = () => log('WS connected');
+  ws.onmessage = (e) => {
+    try { handleWsMsg(JSON.parse(e.data)); } catch {}
+  };
+  ws.onclose = () => {
+    wsReconnectTimer = setTimeout(() => connectWs(roomId), 5000);
+  };
+}
+
+function handleWsMsg(msg) {
+  switch (msg.type) {
+    case 'entry_added':
+      renderFeed([...document.getElementById('feed').querySelectorAll('.entry')]
+        .map(el => ({ /* placeholder - just re-fetch */ })));
+      refreshDisplay();
+      break;
+    case 'round_added':
+      if (msg.current_round) document.getElementById('hSub').textContent = `Round ${msg.current_round}`;
+      refreshDisplay();
+      break;
+    case 'auto_discuss_complete':
+    case 'judge_result':
+    case 'summary_generated':
+      refreshDisplay();
+      loadMeetings();
+      break;
+    case 'meeting_created':
+      loadMeetings();
+      break;
+  }
+}
+
+async function refreshDisplay() {
+  if (!activeRoomId) return;
+  const entries = await api('GET', `/whiteboard/${activeRoomId}`);
+  renderFeed(entries.entries || []);
+  const meeting = meetings.find(m => m.room_id === activeRoomId);
+  if (meeting) {
+    document.getElementById('headerTitle').textContent = meeting.topic;
+    document.getElementById('headerSub').textContent = `${meeting.round_count} rounds`;
+    updateStatus(meeting.status, meeting.consensus);
+  }
+}
+
+async function api(method, path, body) {
+  const opts = { method, headers: {} };
+  if (body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  const res = await fetch(API + path, opts);
+  if (!res.ok) { const err = await res.text(); throw new Error(`HTTP ${res.status}: ${err.slice(0,200)}`); }
+  if (path.endsWith('/export')) return res.text();
+  return res.json();
+}
+
+async function init() {
+  try {
+    await loadAgents(); await loadMeetings(); await loadStats();
+    setInterval(loadMeetings, 5000);
+    setInterval(loadStats, 10000);
+    log('Ready');
+  } catch(e) { log('Error: ' + e.message); }
+}
+
+async function loadAgents() {
+  try { const r = await api('GET','/agents'); agents = r.agents || []; } catch {}
+}
+
+async function loadMeetings() {
+  try {
+    const q = document.getElementById('searchInput').value.trim();
+    const r = q ? await api('GET', '/meetings/search?q=' + encodeURIComponent(q)) : await api('GET', '/meetings');
+    meetings = (r.meetings || []).filter(m => !activeTemplate || m.topic?.toLowerCase().includes(activeTemplate));
+    renderMeetingList();
+  } catch {}
+}
+
+async function loadStats() {
+  try {
+    const r = await api('GET', '/meetings/stats');
+    document.getElementById('sTotal').textContent = r.total_meetings;
+    document.getElementById('sDone').textContent = r.completed;
+    document.getElementById('sConsensus').textContent = r.consensus_reached;
+    document.getElementById('sRounds').textContent = r.total_rounds;
+    document.getElementById('meetingCount').textContent = r.total_meetings;
+  } catch {}
+}
+
+function renderMeetingList() {
+  const el = document.getElementById('meetingList');
+  if (meetings.length === 0) {
+    el.innerHTML = '<div class="meeting-empty">No meetings</div>'; return;
+  }
+  el.innerHTML = meetings.map(m => `
+    <button class="meeting-item ${m.room_id === activeRoomId ? 'active' : ''}"
+      onclick="selectMeeting('${m.room_id}')">
+      <span class="name">${escapeHtml(m.topic || 'untitled')}</span>
+      <span class="meta">${m.round_count || 0} rounds</span>
+      ${m.consensus ? '<span class="tag tag-consensus">consensus</span>' : '<span class="tag tag-discussing">' + m.status + '</span>'}
+    </button>
+  `).join('');
+}
+
+async function selectMeeting(roomId) {
+  activeRoomId = roomId; meetingRunning = false;
+  renderMeetingList();
+  document.getElementById('headerActions').style.display = 'flex';
+  document.getElementById('exportLink').href = `${API}/meetings/${roomId}/export`;
+  document.getElementById('exportLink').textContent = 'Export';
+
+  // WebSocket 实时连接（替代轮询）
+  connectWs(roomId);
+
+  const entries = await api('GET', `/whiteboard/${roomId}`);
+  renderFeed(entries.entries || []);
+  const meeting = meetings.find(m => m.room_id === roomId);
+  if (meeting) {
+    document.getElementById('hTitle').textContent = meeting.topic;
+    document.getElementById('hSub').textContent = `${meeting.round_count} rounds`;
+    updateStatus(meeting.status, meeting.consensus);
+    document.getElementById('controls').style.display = 'flex';
+    document.getElementById('btnDiscuss').disabled = meetingRunning || meeting.status !== 'discussing';
+    document.getElementById('btnJudge').disabled = meetingRunning || (meeting.round_count||0) < 2;
+    document.getElementById('btnSummary').disabled = meetingRunning || !meeting.consensus;
+  }
+}
+
+function renderFeed(entries) {
+  const el = document.getElementById('feed');
+  if (entries.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏛�?/div><div class="empty-text">No discussion yet</div><div class="empty-hint">Click "Auto Discuss"</div></div>';
+    return;
+  }
+  el.innerHTML = entries.map(e => {
+    const a = e.author === 'system' ? 'System' : (agents.find(x => x.id === e.author)?.name || e.author);
+    const ts = new Date((e.timestamp||0)*1000);
+    const t = String(ts.getHours()).padStart(2,'0')+':'+String(ts.getMinutes()).padStart(2,'0');
+    return `<div class="entry ${e.author}">
+      <div class="avatar ${e.author}">${getEmoji(e.author)}</div>
+      <div class="body">
+        <div class="meta"><span class="author">${a}</span><span class="time">${t}</span><span class="type-badge">${e.type}</span></div>
+        <div class="content">${escapeHtml(e.content)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateStatus(status, consensus) {
+  const dot = document.getElementById('statusDot'), txt = document.getElementById('statusText');
+  if (status === 'developing' || consensus) { dot.className = 'status-dot done'; txt.textContent = 'Consensus'; }
+  else if (meetingRunning) { dot.className = 'status-dot running'; txt.textContent = 'Running'; }
+  else { dot.className = 'status-dot idle'; txt.textContent = 'Idle'; }
+}
+
+// Dialog
+function openNewMeeting() {
+  document.getElementById('dialogOverlay').style.display = 'flex';
+  document.getElementById('topicInput').value = '';
+  document.getElementById('templateSelect').value = '';
+  document.getElementById('agentSuggest').style.display = 'none';
+}
+function closeDialog(e) {
+  if (e && e.target !== document.getElementById('dialogOverlay')) return;
+  document.getElementById('dialogOverlay').style.display = 'none';
+}
+let topicTimeout;
+document.getElementById('topicInput').addEventListener('input', () => {
+  clearTimeout(topicTimeout);
+  topicTimeout = setTimeout(suggestAgents, 500);
+});
+document.getElementById('templateSelect').addEventListener('change', suggestAgents);
+
+async function suggestAgents() {
+  const topic = document.getElementById('topicInput').value.trim();
+  const tplId = document.getElementById('templateSelect').value;
+  if (!topic && !tplId) { document.getElementById('agentSuggest').style.display = 'none'; return; }
+  try {
+    const r = await api('POST','/meetings/suggest-agents',{topic: topic || tplId});
+    if (r.suggested && r.suggested.length > 0) {
+      const matched = agents.filter(a => r.suggested.includes(a.id));
+      document.getElementById('agentReason').textContent = r.reasoning || '';
+      document.getElementById('agentList').innerHTML = matched.map(a =>
+        `<label style="display:flex;align-items:center;gap:8px;padding:4px;font-size:13px;cursor:pointer">
+          <input type="checkbox" value="${a.id}" checked style="accent-color:var(--accent-light)">
+          <span>${a.emoji||'🤖'} ${a.name} (${a.title})</span>
+        </label>`
+      ).join('');
+      document.getElementById('agentSuggest').style.display = 'block';
+    }
+  } catch {}
+}
+
+async function startMeeting() {
+  const topic = document.getElementById('topicInput').value.trim() || '(No topic)';
+  const tplId = document.getElementById('templateSelect').value;
+  const cbs = document.querySelectorAll('#agentList input:checked');
+  const agentIds = Array.from(cbs).map(cb => cb.value);
+
+  document.getElementById('btnStart').disabled = true; document.getElementById('btnStart').textContent = 'Starting...';
+  try {
+    let r;
+    if (tplId) {
+      r = await api('POST','/meetings/from-template',{template_id:tplId, topic, agents:agentIds});
+    } else {
+      r = await api('POST','/meetings/start',{topic, agents:agentIds});
+    }
+    closeDialog();
+    activeRoomId = r.room_id; meetingRunning = false;
+    await loadMeetings();
+    document.getElementById('hTitle').textContent = topic;
+    document.getElementById('headerActions').style.display = 'flex';
+    document.getElementById('exportLink').href = `${API}/meetings/${r.room_id}/export`;
+    updateStatus('discussing', false);
+    document.getElementById('controls').style.display = 'flex';
+    document.getElementById('btnDiscuss').disabled = false;
+    log('Meeting created: ' + r.room_id);
+    await startAutoDiscuss();
+  } catch(e) { log('Error: ' + e.message); }
+  document.getElementById('btnStart').disabled = false; document.getElementById('btnStart').textContent = 'Start Meeting';
+}
+
+async function startAutoDiscuss() {
+  if (!activeRoomId || meetingRunning) return;
+  meetingRunning = true;
+  document.getElementById('btnDiscuss').disabled = true;
+  document.getElementById('btnJudge').disabled = true;
+  document.getElementById('btnSummary').disabled = true;
+  updateStatus('discussing', false);
+  log('Auto discussion started...');
+  try {
+    const r = await api('POST', `/meetings/${activeRoomId}/auto-discuss?max_rounds=10`);
+    log(`Done: ${r.rounds_completed} rounds, consensus=${r.consensus}`);
+  } catch(e) { log('Error: ' + e.message); }
+  meetingRunning = false;
+  const entries = await api('GET', `/whiteboard/${activeRoomId}`);
+  renderFeed(entries.entries || []);
+  await loadMeetings();
+  const meeting = meetings.find(m => m.room_id === activeRoomId);
+  if (meeting) {
+    updateStatus(meeting.status, meeting.consensus);
+    document.getElementById('btnJudge').disabled = (meeting.round_count||0) < 2;
+    document.getElementById('btnSummary').disabled = !meeting.consensus;
+  }
+}
+
+async function judgeConsensus() {
+  if (!activeRoomId) return;
+  try {
+    const r = await api('POST', `/meetings/${activeRoomId}/judge`);
+    log(`Judge: consensus=${r.consensus}`);
+    await loadMeetings();
+    const entries = await api('GET', `/whiteboard/${activeRoomId}`);
+    renderFeed(entries.entries || []);
+    const meeting = meetings.find(m => m.room_id === activeRoomId);
+    if (meeting) { updateStatus(meeting.status, meeting.consensus); document.getElementById('btnSummary').disabled = !meeting.consensus; }
+  } catch(e) { log('Error: ' + e.message); }
+}
+
+async function generateSummary() {
+  if (!activeRoomId) return;
+  try {
+    const r = await api('POST', `/meetings/${activeRoomId}/summarize`);
+    log('Summary generated');
+    const entries = await api('GET', `/whiteboard/${activeRoomId}`);
+    renderFeed(entries.entries || []);
+    const feed = document.getElementById('feed');
+    feed.innerHTML += `
+      <div class="summary-card">
+        <h3>Meeting Summary</h3>
+        <div>Topic: ${r.topic||'N/A'}</div>
+        <div>Participants: ${(r.participants||[]).join(', ')}</div>
+        <div>Decisions:</div>
+        <ul>${(r.decisions||[]).map(d => `<li>${escapeHtml(d)}</li>`).join('')}</ul>
+        <div>Action Items:</div>
+        <ul>${(r.action_items||[]).map(a => `<li>${escapeHtml(a)}</li>`).join('')}</ul>
+        <div>Summary: ${r.summary||'N/A'}</div>
+      </div>`;
+    feed.scrollTop = feed.scrollHeight;
+    await loadMeetings();
+  } catch(e) { log('Error: ' + e.message); }
+}
+
+function searchMeetings() { loadMeetings(); }
+
+function selectTemplate(btn, tpl) {
+  document.querySelectorAll('.btn-template').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeTemplate = tpl;
+  loadMeetings();
+}
+
+function getEmoji(a) { return {iris:'🧠',codey:'💻',scribe:'📝',system:'📌'}[a]||'?' }
+function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function log(msg) { document.getElementById('log').textContent = `[${new Date().toLocaleTimeString()}] ${msg}`; }
+
+init();
+</script>
+</body>
+</html>

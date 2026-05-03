@@ -1,0 +1,115 @@
+# ============================================================
+# Environment & Config
+# ============================================================
+.env
+.env.local
+.env.*.local
+config/settings.json
+config/*.bak
+
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv/
+
+# PyInstaller
+*.spec
+
+# ============================================================
+# Node.js
+# ============================================================
+desktop/node_modules/
+*.node_modules/
+.npm
+.yarn-integrity
+.pnp
+.pnp.js
+
+# Desktop build output
+desktop/dist/
+desktop/build/
+
+# ============================================================
+# Testing & Coverage
+# ============================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# ============================================================
+# Runtime Data (exclude from repo, keep structure)
+# ============================================================
+memory/sessions/
+memory/meetings/
+memory/projects/
+memory/entries/
+logs/*.log
+
+# ============================================================
+# IDE & Editor
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ============================================================
+# Archive & Legacy (reference only)
+# ============================================================
+archive/
+
+# ============================================================
+# Build Artifacts
+# ============================================================
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

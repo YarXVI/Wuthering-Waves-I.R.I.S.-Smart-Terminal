@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "providers": [],
+  "mcp_servers": [],
+  "skill_bindings": [],
+  "agent_settings": [],
+  "memrag_enabled": false,
+  "theme": "dark"
+}
