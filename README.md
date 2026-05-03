@@ -8,6 +8,12 @@
   <img src="https://img.shields.io/badge/License-AGPLv3-blue.svg" alt="License">
 </p>
 
+> **⚠️ 第三方声明**：
+> 本项目名称中涉及的"鸣潮"及"I.R.I.S."等商标、角色名称，其知识产权均归库洛游戏（Kuro Game）所有。本项目的使用仅限于个人兴趣和同人创作，无意与官方产生任何混淆，亦不代表官方立场。
+> 如相关权利人认为本项目构成侵权，请联系我进行更名或下架处理。
+> 
+> **代码许可**：除上款所述的第三方名称外，本项目中所有撰写的代码，均依据 [GNU Affero 通用公共许可证第3版（AGPLv3）](https://www.gnu.org/licenses/agpl-3.0.html) 进行许可。您可以自由地使用、修改和分发这些代码，但须遵守AGPLv3的全部条款。
+
 > 🏢 **I.R.I.S.** 是您的虚拟办公室智能助手。基于多Agent协作系统，支持智能会议、知识管理、任务协作，让AI成为您真正的同事。
 
 [English](README_en.md) | 中文

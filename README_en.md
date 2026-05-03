@@ -8,6 +8,12 @@
   <img src="https://img.shields.io/badge/License-AGPLv3-blue.svg" alt="License">
 </p>
 
+> **⚠️ Third-Party Disclaimer**:
+> The trademarks and character names "Wuthering Waves" and "I.R.I.S." used in this project's name are intellectual property of Kuro Game. This project is for personal interest and fan creation only, with no intention to create confusion with the official product, nor does it represent official views.
+> If any rights holder believes this project constitutes infringement, please contact me for renaming or removal.
+>
+> **Code License**: Except for the third-party names mentioned above, all code written in this project is licensed under the [GNU Affero General Public License v3 (AGPLv3)](https://www.gnu.org/licenses/agpl-3.0.html). You are free to use, modify, and distribute this code, subject to all terms of AGPLv3.
+
 > 🏢 **I.R.I.S.** - Your Virtual Office AI Assistant. Based on multi-Agent collaboration system, supporting intelligent meetings, knowledge management, and task collaboration. Making AI your true colleague.
 
 [中文](README.md) | English
