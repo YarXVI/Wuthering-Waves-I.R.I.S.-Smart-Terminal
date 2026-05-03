@@ -1,4 +1,4 @@
-# Wuthering Waves I.R.I.S. Smart Terminal
+# 鸣潮 I.R.I.S. 智能终端
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" alt="Python">
