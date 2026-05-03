@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/React-18.2-green.svg" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.104-orange.svg" alt="FastAPI">
   <img src="https://img.shields.io/badge/Electron-28.3-purple.svg" alt="Electron">
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
+  <img src="https://img.shields.io/badge/License-AGPLv3-blue.svg" alt="License">
 </p>
 
 > 🏢 **I.R.I.S.** 是您的虚拟办公室智能助手。基于多Agent协作系统，支持智能会议、知识管理、任务协作，让AI成为您真正的同事。
@@ -166,7 +166,28 @@ LOG_LEVEL=INFO
 
 ## 许可证
 
-本项目采用 MIT 许可证，详见 [LICENSE](LICENSE)
+本框架采用 [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.html) 开源许可。
+
+- **开源使用**: 欢迎基于AGPLv3条款使用本框架进行开源开发
+- **闭源商用**: 如需闭源商用或获得商业支持，请联系: shenshengtiantang@outlook.com
+- **补充条款**: 如对本框架进行修改并重新发布，必须开源修改版本
+
+### 第三方代码
+
+本框架引入了以下开源组件，请注意各组件许可证的兼容性：
+
+| 组件 | 许可证 | 兼容性说明 |
+|------|--------|------------|
+| FastAPI | MIT | ✅ AGPLv3兼容 |
+| React | MIT | ✅ AGPLv3兼容 |
+| Electron | MIT | ✅ AGPLv3兼容 |
+| LangChain | MIT | ✅ AGPLv3兼容 |
+| Uvicorn | BSD | ✅ AGPLv3兼容 |
+| Pydantic | MIT | ✅ AGPLv3兼容 |
+
+> ⚠️ **注意**: 请避免混用 GPL-incompatible 的库导致法律风险。如有疑问，请联系上述邮箱。
+
+完整许可证文本请参阅 [LICENSE](LICENSE) 文件。
 
 ## 致谢
 

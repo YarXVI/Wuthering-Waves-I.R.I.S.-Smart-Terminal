@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/React-18.2-green.svg" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.104-orange.svg" alt="FastAPI">
   <img src="https://img.shields.io/badge/Electron-28.3-purple.svg" alt="Electron">
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
+  <img src="https://img.shields.io/badge/License-AGPLv3-blue.svg" alt="License">
 </p>
 
 > 🏢 **I.R.I.S.** - Your Virtual Office AI Assistant. Based on multi-Agent collaboration system, supporting intelligent meetings, knowledge management, and task collaboration. Making AI your true colleague.
@@ -166,7 +166,28 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE)
+This framework is licensed under the [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.html) open source license.
+
+- **Open Source Use**: Welcome to use this framework for open source development under AGPLv3 terms
+- **Commercial Use**: For closed-source commercial use or commercial support, please contact: shenshengtiantang@outlook.com
+- **Additional Terms**: If you modify and redistribute this framework, you must release the modified version as open source
+
+### Third-Party Code
+
+This framework uses the following open source components. Please note the license compatibility of each component:
+
+| Component | License | Compatibility |
+|-----------|---------|---------------|
+| FastAPI | MIT | ✅ AGPLv3 Compatible |
+| React | MIT | ✅ AGPLv3 Compatible |
+| Electron | MIT | ✅ AGPLv3 Compatible |
+| LangChain | MIT | ✅ AGPLv3 Compatible |
+| Uvicorn | BSD | ✅ AGPLv3 Compatible |
+| Pydantic | MIT | ✅ AGPLv3 Compatible |
+
+> ⚠️ **Warning**: Avoid mixing GPL-incompatible libraries to prevent legal risks. For questions, please contact the email above.
+
+See the [LICENSE](LICENSE) file for the full license text.
 
 ## Acknowledgements
 

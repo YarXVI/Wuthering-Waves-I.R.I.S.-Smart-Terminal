@@ -1,3 +1,20 @@
+# I.R.I.S. Smart Terminal
+# Copyright (C) 2024 I.R.I.S. Agent
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public
+# License along with this program.  If not, see
+# <https://www.gnu.org/licenses/>.
+
 """
 记忆存储 — 通用记忆管理接口
 支持不同类型的记忆条目，为后续增强（RAG、向量化等）预留扩展点。
