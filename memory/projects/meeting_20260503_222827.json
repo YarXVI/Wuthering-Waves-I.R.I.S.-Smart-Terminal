@@ -1,0 +1,46 @@
+{
+  "room_id": "meeting_20260503_222827",
+  "entries": [
+    {
+      "entry_id": "e_20260503_222827_0000",
+      "author": "system",
+      "type": "note",
+      "content": "会议开始 — 主题: ???? — 参会: 爱弥斯, 小码",
+      "timestamp": 1777818507.223609,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_222837_0001",
+      "author": "codey",
+      "type": "note",
+      "content": "第1轮 — 小码 (提案):\n收到，确认。议题为占位符，无实际内容，无需进一步分析。",
+      "timestamp": 1777818517.385801,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_222839_0002",
+      "author": "aimis",
+      "type": "note",
+      "content": "第2轮 — 爱弥斯 (综合评审):\n收到，确认。当前议题为占位符，无实际内容，无需进一步分析或讨论。等待议题更新后再行处理。",
+      "timestamp": 1777818519.94083,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_222845_0003",
+      "author": "aimis",
+      "type": "note",
+      "content": "共识判断: 已达成共识 ✓\n理由: 讨论中双方均确认议题为占位符、无实际内容，并一致认为无需进一步分析，已就‘暂不处理’达成共识。但当前无具体方案可执行，需等待议题更新。",
+      "timestamp": 1777818525.083014,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    }
+  ],
+  "updated_at": "2026-05-03T22:28:45.083014"
+}

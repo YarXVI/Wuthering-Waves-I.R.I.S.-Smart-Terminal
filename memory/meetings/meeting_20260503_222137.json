@@ -1,0 +1,35 @@
+{
+  "room_id": "meeting_20260503_222137",
+  "topic": "测试会议主题",
+  "agents": [
+    "codey"
+  ],
+  "status": "developing",
+  "rounds": [
+    {
+      "round_number": 1,
+      "author": "codey",
+      "content": "收到，确认。会议主题为测试，无需进一步分析，已就位。",
+      "type": "提案",
+      "timestamp": 1777818100.064043
+    },
+    {
+      "round_number": 2,
+      "author": "aimis",
+      "content": "收到，确认。",
+      "type": "综合评审",
+      "timestamp": 1777818313.658941
+    },
+    {
+      "round_number": 3,
+      "author": "codey",
+      "content": "收到，确认。",
+      "type": "分析回应",
+      "timestamp": 1777818318.810674
+    }
+  ],
+  "consensus": true,
+  "consensus_reason": "所有参会者均确认收到且无任何异议，讨论记录中未出现分歧或风险，因此可视为达成共识。",
+  "artifacts": {},
+  "parent_room": ""
+}

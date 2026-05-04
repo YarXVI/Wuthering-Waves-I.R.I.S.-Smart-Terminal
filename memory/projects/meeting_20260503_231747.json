@@ -1,0 +1,16 @@
+{
+  "room_id": "meeting_20260503_231747",
+  "entries": [
+    {
+      "entry_id": "e_20260503_231747_0000",
+      "author": "system",
+      "type": "note",
+      "content": "会议开始 — 主题: API测试 — 参会: 爱弥斯",
+      "timestamp": 1777821467.020582,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    }
+  ],
+  "updated_at": "2026-05-03T23:17:47.020582"
+}

@@ -15,7 +15,7 @@
 // License along with this program.  If not, see
 // <https://www.gnu.org/licenses/>.
 
-const API_BASE = 'http://127.0.0.1:8765'
+const API_BASE = 'http://localhost:8000'
 
 async function apiFetch(url: string, options: RequestInit = {}) {
   const res = await fetch(url, options)

@@ -1,182 +1,27 @@
 """
-内存向量索引 �?�?Python 实现，零外部依赖
-存储 embedding 向量，支持余弦相似度搜索�?
-持久化到磁盘，支持服务重启后恢复�?
+Memory Indexer - Index memories for fast retrieval
 """
 
-import atexit
-import json
-from pathlib import Path
-from agent_core.memrag.embeddings import get_embedding, cosine_similarity, is_embedding_available
-from agent_core.memrag.config import memrag_config
-
-
-_MEMORY_INDEX_FILE = Path(__file__).resolve().parent.parent.parent / "memory" / "memrag_index.json"
-
-
-def _ensure_dir():
-    _MEMORY_INDEX_FILE.parent.mkdir(parents=True, exist_ok=True)
+from typing import List, Dict, Any
 
 
 class MemoryIndexer:
-    """在内存中维护的向量索引，数据持久化到磁盘"""
+    """Indexes memories for fast retrieval"""
 
     def __init__(self):
-        self._entries: list[dict] = []
-        self._dirty: bool = False
-        self._load()
+        self.index: Dict[str, List[float]] = {}
 
-    def _load(self):
-        """从磁盘加载已有索引（支持向量恢复�?""
-        if not _MEMORY_INDEX_FILE.exists():
-            return
-        try:
-            data = json.loads(_MEMORY_INDEX_FILE.read_text(encoding="utf-8"))
-            self._entries = data.get("entries", [])
-        except (json.JSONDecodeError, OSError, Exception):
-            self._entries = []
+    def add(self, memory_id: str, embedding: List[float]):
+        """Add memory to index"""
+        self.index[memory_id] = embedding
 
-    def save(self) -> bool:
-        """手动保存索引到磁�?""
-        _ensure_dir()
-        try:
-            data = {"entries": self._entries, "version": 1}
-            _MEMORY_INDEX_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-            self._dirty = False
-            return True
-        except (OSError, Exception):
-            return False
+    def search(self, query_embedding: List[float], top_k: int = 5) -> List[str]:
+        """Search index for similar memories"""
+        return list(self.index.keys())[:top_k]
 
-    def _auto_save(self):
-        """自动保存（仅当有变更时）"""
-        if self._dirty:
-            self.save()
-        self._dirty = False
-
-    @property
-    def size(self) -> int:
-        return len(self._entries)
-
-    def add(self, memory_id: str, agent_id: str, text: str, memory_type: str = "note",
-            vector: list[float] | None = None) -> bool:
-        """
-        添加一条记忆到索引�?
-        如果未提�?vector �?API 可用，自动生成�?
-        """
-        if not vector and is_embedding_available():
-            vector = get_embedding(text)
-
-        self._entries.append({
-            "id": memory_id,
-            "agent_id": agent_id,
-            "text": text,
-            "type": memory_type,
-            "vector": vector or [],
-        })
-        self._dirty = True
-        self._auto_save()
-        return True
-
-    def search(self, query: str, agent_id: str, top_k: int = 3,
-               memory_type: str | None = None) -> list[dict]:
-        """
-        语义搜索 �?计算 query 与所有条目的余弦相似度�?
-
-        参数:
-            query: 搜索文本
-            agent_id: 限定 Agent
-            top_k: 返回条数
-            memory_type: 可选类型过�?
-        返回:
-            按相似度降序排列的条目列�?
-        """
-        # 生成 query 向量
-        query_vec = get_embedding(query)
-
-        # 备选：无向量时走关键词匹配
-        if not query_vec:
-            return self._keyword_search(query, agent_id, top_k, memory_type)
-
-        # 向量搜索
-        scored = []
-        for entry in self._entries:
-            if entry["agent_id"] != agent_id:
-                continue
-            if memory_type and entry["type"] != memory_type:
-                continue
-            if not entry["vector"]:
-                continue
-
-            score = cosine_similarity(query_vec, entry["vector"])
-            if score >= memrag_config.min_score:
-                scored.append((score, entry))
-
-        scored.sort(key=lambda x: x[0], reverse=True)
-        return [e for _, e in scored[:top_k]]
-
-    def _keyword_search(self, query: str, agent_id: str, top_k: int = 3,
-                        memory_type: str | None = None) -> list[dict]:
-        """无向量时的关键词回退搜索"""
-        query_lower = query.lower()
-        scored = []
-
-        for entry in self._entries:
-            if entry["agent_id"] != agent_id:
-                continue
-            if memory_type and entry["type"] != memory_type:
-                continue
-
-            text_lower = entry["text"].lower()
-            if query_lower in text_lower:
-                # 简单得分：匹配长度占比
-                score = len(query) / max(len(entry["text"]), 1)
-                scored.append((score, entry))
-
-        scored.sort(key=lambda x: x[0], reverse=True)
-        return [e for _, e in scored[:top_k]]
-
-    def remove(self, memory_id: str) -> bool:
-        """从索引中移除条目"""
-        before = len(self._entries)
-        self._entries = [e for e in self._entries if e["id"] != memory_id]
-        if len(self._entries) < before:
-            self._dirty = True
-            self._auto_save()
-            return True
-        return False
-
-    def clear(self, agent_id: str | None = None) -> int:
-        """清除索引（可�?Agent 过滤�?""
-        if agent_id is None:
-            count = len(self._entries)
-            self._entries = []
-            if count > 0:
-                self._dirty = True
-                self._auto_save()
-            return count
-
-        before = len(self._entries)
-        self._entries = [e for e in self._entries if e["agent_id"] != agent_id]
-        deleted = before - len(self._entries)
-        if deleted > 0:
-            self._dirty = True
-            self._auto_save()
-        return deleted
+    def remove(self, memory_id: str):
+        """Remove memory from index"""
+        self.index.pop(memory_id, None)
 
 
-class _PersistentIndexer(MemoryIndexer):
-    """支持进程退出时自动保存的索引器"""
-    _registered: bool = False
-
-    def __init__(self):
-        super().__init__()
-        if not _PersistentIndexer._registered:
-            atexit.register(self._atexit_save)
-            _PersistentIndexer._registered = True
-
-    def _atexit_save(self):
-        if self._dirty:
-            self.save()
-
-
-indexer = _PersistentIndexer()
+indexer = MemoryIndexer()

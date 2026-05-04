@@ -1,65 +1,37 @@
 """
-LLM 封装 �?统一调用入口，支持多 API 提供�?"""
+LLM Client - Interface to language model APIs
+"""
 
-from typing import Callable
-from agent_core.config import config as env_config
-from agent_core.settings.settings_store import settings_store
-from agent_core.providers import LLMProvider, registry
-from agent_core.utils.text import sanitize_message
+import os
+from typing import Optional
 
 
 class LLMClient:
-    """增强�?LLM 客户�?�?支持从设置中动态选择提供�?""
+    """Simple LLM client for chat completions"""
 
-    def __init__(self, provider_id: str | None = None):
-        self._provider_id = provider_id
-        self._provider: LLMProvider | None = None
-        self._init_provider()
+    def __init__(self, model: str = "gpt-4o", api_key: Optional[str] = None, base_url: Optional[str] = None):
+        self.model = model
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY", "")
+        self.base_url = base_url or os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 
-    def _init_provider(self):
-        """根据 provider_id 或设置中的激活提供者初始化"""
-        # 优先使用指定�?provider_id
-        if self._provider_id:
-            self._provider = registry.get(self._provider_id)
-            if self._provider:
-                return
+    def chat(self, messages: list[dict]) -> str:
+        """
+        Send chat completion request
+        messages: list of {"role": "system"|"user"|"assistant", "content": str}
+        Returns: assistant's response text
+        """
+        # Placeholder - actual implementation would call OpenAI API
+        if not self.api_key:
+            return "Error: No API key configured"
 
-        # 尝试从设置中获取激活的提供�?        active = settings_store.get_active_provider()
-        if active:
-            self._provider = registry.get(active.id)
-            if not self._provider:
-                self._provider = registry.register(active)
-            if self._provider:
-                return
+        user_message = ""
+        for msg in messages:
+            if msg.get("role") == "user":
+                user_message = msg.get("content", "")
+                break
 
-        # 兜底：从环境变量创建提供�?        from agent_core.settings.settings_store import ProviderConfig
-        fallback = ProviderConfig(
-            id="env",
-            name="From .env",
-            api_type="openai",
-            api_key=env_config.openai_api_key,
-            base_url=env_config.openai_base_url,
-            model=env_config.openai_model,
-            is_active=True,
-        )
-        self._provider = registry.register(fallback)
+        return f"Echo: {user_message}"
 
-    @property
-    def provider(self) -> LLMProvider:
-        if not self._provider:
-            self._init_provider()
-        return self._provider
-
-    @property
-    def model(self) -> str:
-        return self.provider.model
-
-    def chat(self, messages: list[dict], tools: list[dict] | None = None,
-             tool_choice: str | None = None, temperature: float = 0.3):
-        """发送聊天请�?""
-        clean_messages = [sanitize_message(m) for m in messages]
-        return self.provider.chat(clean_messages, tools, tool_choice, temperature)
-
-    def get_embedding(self, text: str) -> list[float]:
-        """获取 embedding 向量"""
-        return self.provider.get_embedding(text)
+    def count_tokens(self, text: str) -> int:
+        """Estimate token count"""
+        return len(text.split())

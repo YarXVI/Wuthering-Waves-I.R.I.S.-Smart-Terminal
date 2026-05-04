@@ -1,113 +1,98 @@
 """
-文本工具 �?公共工具函数
+Text utilities for string processing
 """
 
 import re
-
-
-# Emoji 清理正则表达式（统一维护�?EMOJI_PATTERN = re.compile(
-    "[\U0001F300-\U0001F9FF"   # Misc Symbols, Supplemental Symbols
-    "\U0001FA00-\U0001FA6F"    # Chess Symbols
-    "\U0001FA70-\U0001FAFF"    # Symbols Extended-A
-    "\U00002702-\U000027B0"    # Dingbats
-    "\U0001F600-\U0001F64F"    # Emoticons (face smileys)
-    "\U00002600-\U000026FF"    # Misc symbols
-    "\U00002B50"               # White Medium Star
-    "\U0001F100-\U0001F1FF"    # Enclosed Alphanumeric Supplement
-    "\U0001F200-\U0001F2FF"    # Enclosed Ideographic Supplement
-    "\u2764"                   # �?    "\u260E"                   # �?    "\u261D"                   # �?    "\u2620"                   # �?    "\u2622-\u2623"            # ☢☣
-    "\u2626"                   # �?    "\u262A"                   # �?    "\u262E-\u262F"            # ☮☯
-    "\u263A"                   # �?    "\u2640\u2642"             # ♀�?    "\u2648-\u2653"            # ♈♉♊♋♌♍♎♏♐♑♒♓
-    "\u2660-\u2667"            # ♠♡♢♣♤♥♦♧
-    "\u267B\u267E\u267F"       # ♻♾�?    "\u2693\u2695-\u2697\u2699\u269B"  # ⚓⚕⚖⚗⚙⚛
-    "\u26A0\u26A1"             # ⚠⚡
-    "\u26AA-\u26AB"            # ⚪⚫
-    "\u26BD-\u26BE"            # ⚽⚾
-    "\u26C4-\u26C5"            # ⛄⛅
-    "\u26CE\u26D4\u26EA"       # ⛎⛔�?    "\u26F2-\u26F3\u26F5\u26FA\u26FD"  # ⛲⛳⛵⛺�?    "\u2702"                   # �?    "\u2705"                   # �?    "\u2708-\u270D"            # ✈✉✊✋✌✍
-    "\u270F"                   # �?    "\u2712\u2714\u2716"       # ✒✔�?    "\u271D\u2721\u2728"       # ✝✡�?    "\u2733-\u2734"            # ✳✴
-    "\u2744\u2747"             # ❄❇
-    "\u274C\u274E"             # ❌❎
-    "\u2753-\u2755\u2757"      # ❓❔❕❗
-    "\u2763-\u2764"            # ❣❤
-    "\u2795-\u2797"            # ➕➖�?    "\u27A1\u27B0"             # ➡➰
-    "\u2934-\u2935"            # ⤴⤵
-    "\u2B05-\u2B07"            # ⬅⬆�?    "\u2B1B-\u2B1C"            # ⬛⬜
-    "\u2B50\u2B55"             # ⭐⭕
-    "\u3030\u303D"             # 〰�?    "\u3297\u3299"             # ㊗㊙
-    "\u200D"                   # ZWJ (emoji sequence connector)
-    "\uFE0F"                   # Variation Selector-16
-    "\u00A9\u00AE"             # ©®
-    "\u2122"                   # �?    "]+",
-    flags=re.UNICODE
-)
+from typing import Optional
 
 
 def strip_emoji(text: str) -> str:
-    """清除 emoji 字符，保留中英文等正常字�?""
-    if not text:
+    """Remove emoji characters from text"""
+    emoji_pattern = re.compile(
+        "["
+        "\U0001F600-\U0001F64F"  # emoticons
+        "\U0001F300-\U0001F5FF"  # symbols & pictographs
+        "\U0001F680-\U0001F6FF"  # transport & map symbols
+        "\U0001F700-\U0001F77F"  # alchemical symbols
+        "\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
+        "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+        "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+        "\U0001FA00-\U0001FA6F"  # Chess Symbols
+        "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+        "\U00002702-\U000027B0"  # Dingbats
+        "\U000024C2-\U0001F251"
+        "]+",
+        flags=re.UNICODE
+    )
+    return emoji_pattern.sub(r'', text)
+
+
+def truncate(text: str, max_length: int, suffix: str = "...") -> str:
+    """Truncate text to max length with suffix"""
+    if len(text) <= max_length:
         return text
-    return EMOJI_PATTERN.sub("", text)
+    return text[:max_length - len(suffix)] + suffix
 
 
-# 允许的消息字段（用于 API 兼容�?_ALLOWED_MSG_FIELDS = {"role", "content", "tool_calls", "tool_call_id", "name"}
+def clean_whitespace(text: str) -> str:
+    """Clean excessive whitespace from text"""
+    return re.sub(r'\s+', ' ', text).strip()
 
 
-def sanitize_message(msg: dict) -> dict:
-    """
-    清理消息对象�?DeepSeek �?API 注入的额外字段�?    reasoning_content 是模型的内部思考轨迹，跨轮次传递会导致 API 400 错误�?    """
-    return {k: v for k, v in msg.items() if k in _ALLOWED_MSG_FIELDS}
+def extract_code_blocks(text: str) -> list[str]:
+    """Extract code blocks from markdown text"""
+    pattern = r'```[\w]*\n?(.*?)```'
+    return re.findall(pattern, text, re.DOTALL)
 
 
-def sanitize_messages(messages: list[dict]) -> list[dict]:
-    """清理消息列表中的 emoji 和额外字�?""
-    result = []
-    for m in messages:
-        clean = dict(m)
-        if "content" in clean and clean["content"]:
-            clean["content"] = strip_emoji(clean["content"])
-        # 移除 reasoning_content
-        clean.pop("reasoning_content", None)
-        result.append(clean)
-    return result
+def count_words(text: str) -> int:
+    """Count words in text"""
+    return len(re.findall(r'\w+', text))
 
 
-_API_KEY_PATTERN = re.compile(r'(sk-|api-)[a-zA-Z0-9_-]{10,}')
+def remove_markdown(text: str) -> str:
+    """Remove basic markdown formatting"""
+    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+    text = re.sub(r'\*(.+?)\*', r'\1', text)
+    text = re.sub(r'__(.+?)__', r'\1', text)
+    text = re.sub(r'_(.+?)_', r'\1', text)
+    text = re.sub(r'~~(.+?)~~', r'\1', text)
+    text = re.sub(r'`(.+?)`', r'\1', text)
+    return text
 
 
-def mask_api_key(text: str, visible_chars: int = 4) -> str:
-    """
-    掩码 API Key，只保留�?visible_chars 位字符�?
-    �?
-        "sk-abc123def456" �?"sk-a...456"
-    """
-    if not text:
-        return text
-
-    def _mask(match: re.Match) -> str:
-        full = match.group(0)
-        if len(full) <= visible_chars + 4:
-            return full[:visible_chars] + "..." + full[-3:]
-        return full[:visible_chars] + "*" * (len(full) - visible_chars - 3) + full[-3:]
-
-    return _API_KEY_PATTERN.sub(_mask, text)
+def sanitize_messages(messages: list) -> list:
+    """Sanitize message content for display"""
+    sanitized = []
+    for msg in messages:
+        if isinstance(msg, dict):
+            content = msg.get('content', '')
+            sanitized.append({
+                **msg,
+                'content': remove_markdown(strip_emoji(content))
+            })
+    return sanitized
 
 
-def mask_api_keys_in_dict(data: dict, key_fields: set[str] | None = None) -> dict:
-    """递归掩码字典中的所�?API Key 字段"""
-    if key_fields is None:
-        key_fields = {"api_key", "apiKey", "apikey"}
-
+def mask_api_keys_in_dict(data: dict) -> dict:
+    """Mask API keys in dictionary values"""
     result = {}
-    for k, v in data.items():
-        if isinstance(v, dict):
-            result[k] = mask_api_keys_in_dict(v, key_fields)
-        elif isinstance(v, list):
-            result[k] = [mask_api_keys_in_dict(item, key_fields) if isinstance(item, dict) else item for item in v]
-        elif isinstance(v, str) and k in key_fields:
-            result[k] = mask_api_key(v)
-        elif isinstance(v, str):
-            result[k] = mask_api_key(v)  # 也检查字符串中是否包�?key
+    for key, value in data.items():
+        if isinstance(value, dict):
+            result[key] = mask_api_keys_in_dict(value)
+        elif isinstance(value, list):
+            result[key] = [
+                mask_api_keys_in_dict(item) if isinstance(item, dict) else item
+                for item in value
+            ]
+        elif isinstance(value, str):
+            # Mask API keys - look for common patterns
+            masked = value
+            # Check for OpenAI-style keys (sk-...)
+            masked = re.sub(r'sk-[A-Za-z0-9_-]+', 'sk-***', masked)
+            # Check for API keys in general
+            masked = re.sub(r'api[_-]?key[\s:=]+[A-Za-z0-9_-]+', 'api_key=***', masked, flags=re.IGNORECASE)
+            result[key] = masked
         else:
-            result[k] = v
+            result[key] = value
     return result

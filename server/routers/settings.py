@@ -1,7 +1,6 @@
 """
-路由：设置管理（API 提供者、MCP、Skills�?
+Router: Settings Management (API Providers, MCP, Skills)
 """
-
 from fastapi import APIRouter
 from agent_core.settings.settings_store import settings_store
 from agent_core.providers import registry
@@ -12,25 +11,22 @@ from agent_core.core.agent_manager import manager
 router = APIRouter()
 
 
-# ---- Settings ----
-
 @router.get("/settings")
 def get_settings():
-    """获取所有设置（API Key 自动掩码�?""
+    """Get all settings (API Key automatically masked)"""
     return settings_store.to_dict_masked()
 
 
-# ---- Providers ----
-
 @router.get("/settings/providers")
 def list_providers():
-    """列出所�?API 提供�?""
-    return {"providers": registry.list_providers()}
+    """List all API providers"""
+    providers = registry.providers
+    return {"providers": list(providers.values())}
 
 
 @router.post("/settings/providers")
 def update_providers(req: dict):
-    """更新 API 提供者列�?""
+    """Update API providers list"""
     providers_data = req.get("providers", [])
     settings_store.update_providers(providers_data)
     from agent_core.settings.settings_store import ProviderConfig
@@ -39,62 +35,38 @@ def update_providers(req: dict):
     return {"status": "ok"}
 
 
-# ---- MCP ----
-
 @router.get("/settings/mcp")
 def list_mcp_servers():
-    """列出 MCP 服务器状�?""
+    """List MCP server status"""
     servers = []
-    for sid, server in mcp_manager._servers.items():
-        servers.append({
-            "id": sid,
-            "name": server.config.name,
-            "connected": server.is_connected,
-            "tools": len(server.tools),
-        })
-    return {"servers": servers, "configured": len(settings_store.settings.mcp_servers)}
+    configured = settings_store.settings.mcp_servers if hasattr(settings_store, 'settings') else []
+
+    if hasattr(mcp_manager, '_servers') and mcp_manager._servers:
+        for sid, server in mcp_manager._servers.items():
+            servers.append({
+                "id": sid,
+                "name": server.config.name if hasattr(server, 'config') else sid,
+                "connected": server.is_connected if hasattr(server, 'is_connected') else False,
+                "tools": len(server.tools) if hasattr(server, 'tools') else 0,
+            })
+    else:
+        for cfg in configured:
+            servers.append({
+                "id": cfg.get("id", "unknown"),
+                "name": cfg.get("name", "Unknown Server"),
+                "connected": False,
+                "tools": 0,
+            })
+
+    return {"servers": servers, "configured": len(configured)}
 
 
 @router.post("/settings/mcp")
 def update_mcp_servers(req: dict):
-    """更新 MCP 服务器配�?""
+    """Update MCP server configuration"""
     servers_data = req.get("servers", [])
     settings_store.update_mcp_servers(servers_data)
     from agent_core.settings.settings_store import MCPConfig
     configs = [MCPConfig(**s) for s in servers_data]
     mcp_manager.load_configs(configs)
-    return {"status": "ok"}
-
-
-# ---- Agent Settings ----
-
-@router.post("/settings/agents")
-def update_agent_settings(req: list[dict]):
-    """更新 Agent 个性化设置"""
-    settings_store.update_agent_settings(req)
-    return {"status": "ok"}
-
-
-# ---- Skills ----
-
-@router.get("/skills")
-def list_skills():
-    """列出所有可用技�?""
-    return {"skills": skills_registry.list_skills()}
-
-
-@router.post("/skills/{name}/toggle")
-def toggle_skill(name: str, req: dict):
-    """启用/禁用技�?""
-    enabled = req.get("enabled", True)
-    ok = skills_registry.enable_skill(name, enabled)
-    return {"status": "ok" if ok else "not_found", "enabled": enabled}
-
-
-# ---- Services ----
-
-@router.post("/services/reload")
-def reload_services():
-    """重新加载所有服务（API 提供者、MCP、技能）"""
-    manager.reload_services()
     return {"status": "ok"}

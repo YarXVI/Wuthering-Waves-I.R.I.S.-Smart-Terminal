@@ -1,0 +1,56 @@
+{
+  "room_id": "meeting_20260503_221453",
+  "entries": [
+    {
+      "entry_id": "e_20260503_221453_0000",
+      "author": "system",
+      "type": "note",
+      "content": "会议开始 — 主题: 会议功能测试，所有人收到请回复 1，持续10轮 — 参会: 爱弥斯, 小码, 小文",
+      "timestamp": 1777817693.119492,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_221455_0001",
+      "author": "codey",
+      "type": "note",
+      "content": "第1轮 — 小码 (提案):\n1",
+      "timestamp": 1777817695.193744,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_221456_0002",
+      "author": "scribe",
+      "type": "note",
+      "content": "第2轮 — 小文 (提案):\n1",
+      "timestamp": 1777817696.783675,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_221459_0003",
+      "author": "aimis",
+      "type": "note",
+      "content": "第3轮 — 爱弥斯 (分析比较):\n1",
+      "timestamp": 1777817699.041238,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_221504_0004",
+      "author": "aimis",
+      "type": "note",
+      "content": "共识判断: 已达成共识 ✓\n理由: 所有参会者均回复了相同的「1」，表明团队在会议功能测试中达成一致，无分歧或风险。",
+      "timestamp": 1777817704.945492,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    }
+  ],
+  "updated_at": "2026-05-03T22:15:04.945492"
+}

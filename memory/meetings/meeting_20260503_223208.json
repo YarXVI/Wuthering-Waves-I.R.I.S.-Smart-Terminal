@@ -1,0 +1,36 @@
+{
+  "room_id": "meeting_20260503_223208",
+  "topic": "完整流程测试",
+  "agents": [
+    "codey",
+    "scribe"
+  ],
+  "status": "developing",
+  "rounds": [
+    {
+      "round_number": 1,
+      "author": "codey",
+      "content": "收到，确认。本议题为流程测试，已确认参会的角色和流程设定无误。",
+      "type": "提案",
+      "timestamp": 1777818734.005009
+    },
+    {
+      "round_number": 2,
+      "author": "scribe",
+      "content": "收到，确认。本议题为流程测试，已确认参会角色和流程设定无误。",
+      "type": "提案",
+      "timestamp": 1777818737.958046
+    },
+    {
+      "round_number": 3,
+      "author": "aimis",
+      "content": "收到，确认。本议题为流程测试，已确认参会角色和流程设定无误。",
+      "type": "分析比较",
+      "timestamp": 1777818739.839208
+    }
+  ],
+  "consensus": true,
+  "consensus_reason": "所有参会者仅确认流程设定无误，未提出任何实际方案或评审意见，缺乏实质性讨论和决策内容，无法认定达成共识。",
+  "artifacts": {},
+  "parent_room": ""
+}

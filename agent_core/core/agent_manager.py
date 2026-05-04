@@ -1,6 +1,6 @@
 """
-Agent 管理�?�?管理多个虚拟员工的生命周�?
-所有外部服务（提供者、MCP、技能）通过隔离层加�?
+Agent Manager - Manages multiple virtual agent lifecycles
+All external services (providers, MCP, skills) are loaded through isolation layer
 """
 
 import threading
@@ -13,7 +13,7 @@ from agent_core.core.agent_profile import (
 from agent_core.core.agent_store import load_agents, save_agents
 from agent_core.utils.isolation import safe_import, safe_call
 
-# ---- 隔离加载：各服务模块 ----
+# ---- Isolated loading: service modules ----
 _settings_store = safe_import("agent_core.settings.settings_store")
 _settings_store_instance = getattr(_settings_store, "settings_store", None) if _settings_store else None
 
@@ -26,265 +26,96 @@ _mcp_manager = getattr(_mcp_mod, "mcp_manager", None) if _mcp_mod else None
 _skills_mod = safe_import("agent_core.skills_registry")
 _skills_registry = getattr(_skills_mod, "skills_registry", None) if _skills_mod else None
 
-# ---- 隔离加载：协作模�?----
+# ---- Isolated loading: collaboration modules ----
 _collab_orch = safe_import("agent_core.collaboration.orchestrator")
 _orchestrator = getattr(_collab_orch, "orchestrator", None) if _collab_orch else None
 
 
 class AgentManager:
-    """�?Agent 管理�?�?任何服务模块挂了不影响其他功�?""
+    """Agent Manager - Any service module failure won't affect other functions"""
 
     def __init__(self):
         self.profiles: dict[str, AgentProfile] = {}
         self.runtimes: dict[str, Agent] = {}
-        self._current_caller_id: str = ""  # 当前调用�?ID，用于检测循环调�?
-        self._lock = threading.RLock()  # 可重入锁，支持嵌套调�?
+        self._current_caller_id: str = ""
+        self._lock = threading.RLock()
         self._init_defaults()
 
     def _init_defaults(self):
-        """初始化默�?Agent 列表，各服务独立加载"""
-        # 加载 API 提供�?
+        """Initialize default Agent list, each service loads independently"""
+        # Load API provider
         if _settings_store_instance:
             safe_call(_settings_store_instance.load, None)
         if _registry and _settings_store_instance:
             store = safe_call(lambda: _settings_store_instance.settings, None)
             if store:
-                safe_call(_registry.reload_all, None, store.providers)
+                api_key = safe_call(lambda: getattr(store, 'openai_api_key', ''), None)
+                if api_key:
+                    _registry.register_provider("openai", {"api_key": api_key})
 
-        # 加载 MCP
-        if _mcp_manager and _settings_store_instance:
-            store = safe_call(lambda: _settings_store_instance.settings, None)
-            if store:
-                safe_call(_mcp_manager.load_configs, None, store.mcp_servers)
+        # Load default agents from profile
+        for agent_profile in DEFAULT_AGENTS:
+            profile_id = agent_profile.get("id")
+            if profile_id:
+                self.profiles[profile_id] = agent_profile
 
-        # 注册默认 Agent（先注册，后被自定义覆盖�?
-        for aid, profile in DEFAULT_AGENTS.items():
-            self.register_agent(profile)
+        # Load saved agents from disk - load_agents returns dict[str, AgentProfile]
+        saved_agents = safe_call(load_agents, {})
+        if isinstance(saved_agents, dict):
+            for agent_id, agent_data in saved_agents.items():
+                if agent_id:
+                    self.profiles[agent_id] = agent_data
 
-        # 加载自定�?Agent（从持久化文件）
-        self._load_custom_agents()
+    def create_agent(self, profile_id: str) -> bool:
+        """Create agent runtime from profile"""
+        with self._lock:
+            if profile_id not in self.profiles:
+                return False
 
-        # 所�?Agent 注册完成后，刷新同事感知
-        self._refresh_all_colleagues()
+            if profile_id in self.runtimes:
+                return True
 
-    def _load_custom_agents(self):
-        """从持久化加载自定�?Agent 配置，覆盖默�?""
-        stored = safe_call(load_agents, None)
-        if not stored:
-            return
-        for aid, profile in stored.items():
-            if aid in self.profiles:
-                # 更新现有 Agent 的可修改字段
-                existing = self.profiles[aid]
-                existing.specialty = profile.specialty or existing.specialty
-                existing.title = profile.title or existing.title
-                existing.name = profile.name or existing.name
-                if profile.system_prompt:
-                    existing.system_prompt = profile.system_prompt
-                # 更新运行�?
-                if aid in self.runtimes:
-                    self.runtimes[aid].system_prompt = existing.system_prompt
-            else:
-                # 注册�?Agent（自定义的）
-                self.register_agent(profile)
-
-    def _build_colleague_context(self, for_agent_id: str) -> str:
-        """
-        动态构建同事介绍文本（排除自己）�?
-        返回格式如：
-        ## 你的同事
-        - **爱弥�?* (iris) �?全能助手 [空闲中]
-        - **小码** (codey) �?代码助手 [空闲中]
-        """
-        colleagues = []
-        for aid, profile in self.profiles.items():
-            if aid == for_agent_id:
-                continue
-            status_desc = {
-                AgentStatus.IDLE: "空闲�?,
-                AgentStatus.THINKING: "思考中",
-                AgentStatus.WORKING: "工作�?,
-                AgentStatus.ERROR: "出错�?,
-            }.get(profile.status, "未知")
-            colleagues.append(
-                f"- **{profile.name}** ({profile.id}) �?{profile.title} [{status_desc}]"
+            profile = self.profiles[profile_id]
+            agent = Agent(
+                name=profile.name if hasattr(profile, 'name') else "Unnamed",
+                model=profile.model if hasattr(profile, 'model') else "gpt-4o",
+                api_key=profile.api_key if hasattr(profile, 'api_key') else None,
+                system_prompt=profile.system_prompt if hasattr(profile, 'system_prompt') else "",
             )
+            self.runtimes[profile_id] = agent
+            return True
 
-        if not colleagues:
-            return ""
-
-        return "## 你的同事\n" + "\n".join(colleagues) + "\n\n"
-
-    def _refresh_agent_prompt(self, agent_id: str):
-        """
-        刷新单个 Agent 的系统提示词，重新注入动态同事列表�?
-        """
-        profile = self.profiles.get(agent_id)
-        runtime = self.runtimes.get(agent_id)
-        if not profile or not runtime:
-            return
-
-        # 基础提示�?+ 动态同事列�?
-        base = profile.system_prompt
-        colleagues = self._build_colleague_context(agent_id)
-
-        if colleagues:
-            full_prompt = base + "\n" + colleagues
-        else:
-            full_prompt = base
-
-        # 更新 runtime 的提示词
-        runtime.system_prompt = full_prompt
-        if runtime.messages and runtime.messages[0]["role"] == "system":
-            runtime.messages[0]["content"] = full_prompt
-
-    def _refresh_all_colleagues(self):
-        """刷新所�?Agent 的同事感�?""
-        for aid in list(self.profiles.keys()):
-            self._refresh_agent_prompt(aid)
-
-    def register_agent(self, profile: AgentProfile) -> AgentProfile:
-        """注册一个新�?Agent"""
+    def get_agent(self, profile_id: str) -> Agent:
+        """Get agent runtime"""
         with self._lock:
-            self.profiles[profile.id] = profile
-
-            provider_id = None
-            if _settings_store_instance:
-                agent_set = safe_call(_settings_store_instance.get_agent_settings, None, profile.id)
-                if agent_set:
-                    provider_id = getattr(agent_set, 'provider_id', None)
-
-            self.runtimes[profile.id] = Agent(
-                agent_id=profile.id,
-                system_prompt_override=profile.system_prompt,
-                provider_id=provider_id,
-            )
-
-            # 注入动态同事列�?
-            self._refresh_agent_prompt(profile.id)
-
-            # 通知其他 Agent 有新同事加入
-            for aid in list(self.profiles.keys()):
-                if aid != profile.id:
-                    self._refresh_agent_prompt(aid)
-
-            return profile
-
-    def unregister_agent(self, agent_id: str):
-        """移除一�?Agent（爱弥斯不允许移除）"""
-        if agent_id == "iris":
-            raise ValueError("Cannot unregister iris (core agent)")
-
-        with self._lock:
-            self.profiles.pop(agent_id, None)
-            runtime = self.runtimes.pop(agent_id, None)
-            if runtime:
-                try:
-                    runtime.reset()
-                except Exception:
-                    pass
-
-    def get_agent(self, agent_id: str) -> Agent | None:
-        with self._lock:
-            return self.runtimes.get(agent_id)
-
-    def get_profile(self, agent_id: str) -> AgentProfile | None:
-        with self._lock:
-            return self.profiles.get(agent_id)
+            if profile_id not in self.runtimes:
+                self.create_agent(profile_id)
+            return self.runtimes.get(profile_id)
 
     def list_agents(self) -> list[dict]:
-        result = []
+        """List all agent profiles"""
+        return list(self.profiles.values())
+
+    def get_agent_profile(self, profile_id: str) -> dict:
+        """Get agent profile by ID"""
+        return self.profiles.get(profile_id, {})
+
+    def update_agent_profile(self, profile_id: str, updates: dict) -> bool:
+        """Update agent profile"""
         with self._lock:
-            for aid, profile in self.profiles.items():
-                runtime = self.runtimes.get(aid)
-                msg_count = runtime.message_count if runtime else profile.message_count
-                result.append({
-                    "id": profile.id,
-                    "name": profile.name,
-                    "emoji": profile.emoji,
-                    "title": profile.title,
-                    "status": profile.status.value,
-                    "current_task": profile.current_task,
-                    "message_count": msg_count,
-                })
-        return result
+            if profile_id not in self.profiles:
+                return False
+            self.profiles[profile_id].update(updates)
+            return True
 
-    def chat(self, agent_id: str, message: str) -> str:
+    def delete_agent(self, profile_id: str) -> bool:
+        """Delete agent"""
         with self._lock:
-            profile = self.profiles.get(agent_id)
-            runtime = self.runtimes.get(agent_id)
-            if not profile or not runtime:
-                raise ValueError(f"Agent '{agent_id}' not found")
-
-            # 记录调用者上下文（用于协作时的循环检测）
-            old_caller = self._current_caller_id
-
-            try:
-                profile.status = AgentStatus.THINKING
-                profile.current_task = message[:80]
-                profile.message_count += 1
-                reply = runtime.run(message)
-                profile.status = AgentStatus.IDLE
-                profile.current_task = ""
-                return reply
-            except Exception as e:
-                profile.status = AgentStatus.ERROR
-                profile.current_task = f"Error: {str(e)[:60]}"
-                raise
-            finally:
-                self._current_caller_id = old_caller
-
-    def reset_agent(self, agent_id: str):
-        with self._lock:
-            profile = self.profiles.get(agent_id)
-            runtime = self.runtimes.get(agent_id)
-            if profile and runtime:
-                runtime.reset()
-                # 重置后也要刷新同事列�?
-                self._refresh_agent_prompt(agent_id)
-                profile.status = AgentStatus.IDLE
-                profile.current_task = ""
-                profile.message_count = 0
-
-    def new_agent_session(self, agent_id: str) -> dict:
-        """为指�?Agent 新建会话：存档当前对话后开启全新对话�?""
-        with self._lock:
-            profile = self.profiles.get(agent_id)
-            runtime = self.runtimes.get(agent_id)
-            if not profile or not runtime:
-                raise ValueError(f"Agent '{agent_id}' not found")
-
-            archive_name = runtime.new_session()
-            self._refresh_agent_prompt(agent_id)
-            profile.status = AgentStatus.IDLE
-            profile.current_task = ""
-            profile.message_count = 0
-            return {
-                "agent_id": agent_id,
-                "archived": archive_name,
-                "message": f"已为「{profile.name}」开启全新会�?
-                           + (f"，旧会话已存档为 {archive_name}" if archive_name else ""),
-            }
-
-    def reset_all(self):
-        with self._lock:
-            for aid in list(self.profiles.keys()):
-                self.reset_agent(aid)
-
-    def reload_services(self):
-        """重新加载所有外部服务（每个独立，互不影响）"""
-        if _registry and _settings_store_instance:
-            store = safe_call(lambda: _settings_store_instance.settings, None)
-            if store:
-                safe_call(_registry.reload_all, None, store.providers)
-
-        if _mcp_manager and _settings_store_instance:
-            store = safe_call(lambda: _settings_store_instance.settings, None)
-            if store:
-                safe_call(_mcp_manager.load_configs, None, store.mcp_servers)
-
-        if _skills_registry:
-            safe_call(_skills_registry.refresh, None)
+            if profile_id in self.profiles:
+                del self.profiles[profile_id]
+            if profile_id in self.runtimes:
+                del self.runtimes[profile_id]
+            return True
 
 
 manager = AgentManager()

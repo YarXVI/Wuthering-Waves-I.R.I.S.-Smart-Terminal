@@ -1,0 +1,11 @@
+{
+  "room_id": "meeting_20260503_231747",
+  "topic": "API测试",
+  "agents": [],
+  "status": "discussing",
+  "rounds": [],
+  "consensus": false,
+  "consensus_reason": "",
+  "artifacts": {},
+  "parent_room": ""
+}

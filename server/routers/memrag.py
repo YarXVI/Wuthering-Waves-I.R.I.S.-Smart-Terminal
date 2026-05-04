@@ -1,7 +1,6 @@
 """
-路由：MemRAG 记忆增强
+Router: MemRAG Memory Enhancement
 """
-
 from fastapi import APIRouter
 from pydantic import BaseModel
 from agent_core.memrag.config import memrag_config
@@ -12,17 +11,19 @@ router = APIRouter()
 
 
 class MemRAGToggleRequest(BaseModel):
+    """Toggle MemRAG request"""
     enabled: bool
 
 
 @router.get("/memrag")
 def get_memrag_status():
-    """获取 MemRAG 当前状�?""
+    """Get current MemRAG status"""
+    index_size = len(indexer._entries) if hasattr(indexer, '_entries') else 0
     return {
         "enabled": memrag_config.enabled,
         "top_k": memrag_config.top_k,
         "embedding_available": pipeline.embedding_available,
-        "index_size": indexer.size,
+        "index_size": index_size,
         "stats": {
             "retrievals": memrag_config.total_retrievals,
             "injections": memrag_config.total_injections,
@@ -32,7 +33,7 @@ def get_memrag_status():
 
 @router.post("/memrag/toggle")
 def toggle_memrag(req: MemRAGToggleRequest):
-    """切换 MemRAG 记忆增强开�?""
+    """Toggle MemRAG memory enhancement on/off"""
     was = memrag_config.enabled
     memrag_config.enabled = req.enabled
     return {
@@ -44,7 +45,7 @@ def toggle_memrag(req: MemRAGToggleRequest):
 
 @router.get("/memrag/index/{agent_id}")
 def get_memrag_index(agent_id: str):
-    """查看指定 Agent 的向量索引内�?""
+    """View vector index content for specified Agent"""
     entries = [e for e in indexer._entries if e["agent_id"] == agent_id]
     return {
         "agent_id": agent_id,

@@ -1,8 +1,7 @@
 """
-Settings Store �?持久化设置管�?
-JSON 文件存储，支持热重载�?
+Settings Store - Persistent Settings Management
+JSON file storage with hot-reload support
 """
-
 import json
 import os
 from pathlib import Path
@@ -12,24 +11,24 @@ from dotenv import load_dotenv
 from agent_core.utils.filelock import locked_write, locked_read
 from agent_core.utils.text import mask_api_keys_in_dict
 
-# 加载 .env（如果还没加载）
+# Load .env if not already loaded
 load_dotenv()
 
-# 从环境变量读取默认�?
+# Read defaults from environment variables
 _DEFAULT_API_KEY = os.getenv("OPENAI_API_KEY", "")
 _DEFAULT_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 _DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
 
-# 设置文件路径
+# Settings file paths
 SETTINGS_DIR = Path(__file__).parent.parent.parent / "config"
 SETTINGS_FILE = SETTINGS_DIR / "settings.json"
 
 
 @dataclass
 class ProviderConfig:
-    """API 提供者配�?""
-    id: str = ""                         # 唯一标识
-    name: str = ""                       # 显示名称
+    """API Provider Configuration"""
+    id: str = ""                         # Unique identifier
+    name: str = ""                       # Display name
     api_type: str = "openai"             # openai / anthropic / ollama / custom
     api_key: str = ""
     base_url: str = ""
@@ -38,9 +37,9 @@ class ProviderConfig:
 
     def resolved_api_key(self) -> str:
         """
-        解析 api_key�?
-        - 如果值以 $ 开头，视为环境变量引用，返回环境变量�?
-        - 否则返回原始�?
+        Resolve api_key:
+        - If value starts with $, treat as environment variable reference
+        - Otherwise return original value
         """
         key = self.api_key
         if key.startswith("$"):
@@ -51,10 +50,10 @@ class ProviderConfig:
 
 @dataclass
 class MCPConfig:
-    """MCP 服务器配�?""
+    """MCP Server Configuration"""
     id: str = ""
     name: str = ""
-    command: str = ""                     # 启动命令
+    command: str = ""                     # Startup command
     args: list[str] = field(default_factory=list)
     env: dict[str, str] = field(default_factory=dict)
     enabled: bool = False
@@ -62,7 +61,7 @@ class MCPConfig:
 
 @dataclass
 class SkillBinding:
-    """技能绑定到 Agent"""
+    """Skill to Agent Binding"""
     skill_name: str = ""
     agent_id: str = ""
     enabled: bool = True
@@ -70,9 +69,9 @@ class SkillBinding:
 
 @dataclass
 class AgentSettings:
-    """Agent 个性化设置"""
+    """Agent Personalized Settings"""
     id: str = ""
-    provider_id: str = ""                 # 使用的提供�?
+    provider_id: str = ""                 # Provider to use
     system_prompt_override: str = ""
     temperature: float = 0.3
     top_k_memories: int = 3
@@ -80,11 +79,11 @@ class AgentSettings:
 
 @dataclass
 class AppSettings:
-    """全局应用设置"""
-    # 版本
+    """Global Application Settings"""
+    # Version
     version: int = 1
 
-    # API 提供者列�?
+    # API Providers
     providers: list[ProviderConfig] = field(default_factory=lambda: [
         ProviderConfig(
             id="default",
@@ -106,33 +105,32 @@ class AppSettings:
         ),
     ])
 
-    # MCP 服务�?
+    # MCP Servers
     mcp_servers: list[MCPConfig] = field(default_factory=list)
 
-    # 技能绑�?
+    # Skill Bindings
     skill_bindings: list[SkillBinding] = field(default_factory=list)
 
-    # Agent 个性化
+    # Agent Personalization
     agent_settings: list[AgentSettings] = field(default_factory=list)
 
-    # 通用
+    # General
     memrag_enabled: bool = False
     theme: str = "dark"
 
 
 class SettingsStore:
-    """持久化设置存�?""
+    """Persistent Settings Storage"""
 
     def __init__(self):
         self._settings: AppSettings | None = None
 
     def load(self) -> AppSettings:
-        """从磁盘加载设�?""
+        """Load settings from disk"""
         if not SETTINGS_FILE.exists():
             self._settings = AppSettings()
             self.save()
             return self._settings
-
         try:
             with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -143,23 +141,21 @@ class SettingsStore:
             return self._settings
 
     def save(self):
-        """保存设置到磁盘（带文件锁，防止竞态）"""
+        """Save settings to disk (with file lock to prevent race conditions)"""
         if self._settings is None:
             return
-
         SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
         data = self._to_dict(self._settings)
-        # 写入前备份（防止写坏�?
+        # Backup before writing (prevent corruption)
         if SETTINGS_FILE.exists():
             backup = SETTINGS_FILE.with_suffix(".json.bak")
             try:
                 os.replace(SETTINGS_FILE, backup)
             except OSError:
                 pass
-
         json_str = json.dumps(data, indent=2, ensure_ascii=False)
         if not locked_write(SETTINGS_FILE, json_str):
-            # 降级：使用普通写�?
+            # Fallback: use regular write
             with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
                 f.write(json_str)
 
@@ -170,7 +166,7 @@ class SettingsStore:
         return self._settings
 
     def get_active_provider(self) -> ProviderConfig | None:
-        """获取当前激活的 API 提供�?""
+        """Get currently active API provider"""
         for p in self.settings.providers:
             if p.is_active:
                 return p
@@ -179,14 +175,14 @@ class SettingsStore:
         return None
 
     def get_agent_settings(self, agent_id: str) -> AgentSettings | None:
-        """获取指定 Agent 的个性化设置"""
+        """Get personalized settings for specified Agent"""
         for a in self.settings.agent_settings:
             if a.id == agent_id:
                 return a
         return None
 
     def get_agent_provider(self, agent_id: str) -> ProviderConfig | None:
-        """获取指定 Agent 使用的提供者（没有则用默认�?""
+        """Get provider used by specified Agent (uses default if none specified)"""
         agent_set = self.get_agent_settings(agent_id)
         if agent_set and agent_set.provider_id:
             for p in self.settings.providers:
@@ -195,26 +191,26 @@ class SettingsStore:
         return self.get_active_provider()
 
     def update_providers(self, providers: list[dict]):
-        """更新 API 提供者列�?""
+        """Update API providers list"""
         self.settings.providers = [ProviderConfig(**p) for p in providers]
         self.save()
 
     def update_mcp_servers(self, servers: list[dict]):
-        """更新 MCP 服务器列�?""
+        """Update MCP servers list"""
         self.settings.mcp_servers = [MCPConfig(**s) for s in servers]
         self.save()
 
     def update_agent_settings(self, agent_settings: list[dict]):
-        """更新 Agent 设置"""
+        """Update Agent settings"""
         self.settings.agent_settings = [AgentSettings(**a) for a in agent_settings]
         self.save()
 
     def to_dict(self) -> dict:
-        """导出为字典（用于内部持久化）"""
+        """Export as dictionary (for internal persistence)"""
         return self._to_dict(self.settings)
 
     def to_dict_masked(self) -> dict:
-        """导出为字典并掩码 API Key（用�?API 返回�?""
+        """Export as dictionary with masked API keys (for API responses)"""
         raw = self._to_dict(self.settings)
         return mask_api_keys_in_dict(raw)
 
@@ -247,5 +243,5 @@ class SettingsStore:
         }
 
 
-# 全局单例
+# Global singleton
 settings_store = SettingsStore()

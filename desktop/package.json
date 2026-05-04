@@ -1,7 +1,7 @@
 {
   "name": "iris-desktop",
   "version": "0.2.0",
-  "description": "爱弥�?�?虚拟办公室桌面客户端",
+  "description": "I.R.I.S. Virtual Office Desktop Client",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -38,7 +38,7 @@
   },
   "build": {
     "appId": "com.iris.desktop",
-    "productName": "爱弥�?,
+    "productName": "I.R.I.S.",
     "directories": {
       "output": "build"
     },

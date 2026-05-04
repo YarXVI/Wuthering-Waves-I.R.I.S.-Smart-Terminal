@@ -1,0 +1,56 @@
+{
+  "room_id": "meeting_20260503_222137",
+  "entries": [
+    {
+      "entry_id": "e_20260503_222137_0000",
+      "author": "system",
+      "type": "note",
+      "content": "会议开始 — 主题: 测试会议主题 — 参会: 爱弥斯, 小码",
+      "timestamp": 1777818097.16847,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_222140_0001",
+      "author": "codey",
+      "type": "note",
+      "content": "第1轮 — 小码 (提案):\n收到，确认。会议主题为测试，无需进一步分析，已就位。",
+      "timestamp": 1777818100.066049,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_222513_0002",
+      "author": "aimis",
+      "type": "note",
+      "content": "第2轮 — 爱弥斯 (综合评审):\n收到，确认。",
+      "timestamp": 1777818313.66245,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_222518_0003",
+      "author": "codey",
+      "type": "note",
+      "content": "第3轮 — 小码 (分析回应):\n收到，确认。",
+      "timestamp": 1777818318.814209,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_222521_0004",
+      "author": "aimis",
+      "type": "note",
+      "content": "共识判断: 已达成共识 ✓\n理由: 所有参会者均确认收到且无任何异议，讨论记录中未出现分歧或风险，因此可视为达成共识。",
+      "timestamp": 1777818321.463161,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    }
+  ],
+  "updated_at": "2026-05-03T22:25:21.463161"
+}

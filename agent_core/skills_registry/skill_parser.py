@@ -1,5 +1,5 @@
 """
-Skill Parser �?解析 SKILL.md 前件元数�?+ 触发关键�?
+Skill Parser - Parse SKILL.md frontmatter metadata and trigger keywords
 """
 
 import re
@@ -9,15 +9,15 @@ from typing import Optional
 
 def parse_skill_md(skill_dir: Path) -> dict:
     """
-    解析 SKILL.md，提取前件元数据和触发关键词�?
+    Parse SKILL.md, extract frontmatter metadata and trigger keywords
 
-    返回:
+    Returns:
         {
             "name": str,
             "description": str,
-            "triggers": [str, ...],   # 触发关键词列�?
-            "instruct": str,           # 完整�?SKILL.md 正文
-            "has_scripts": bool,       # 是否�?scripts/ 目录
+            "triggers": [str, ...],   # List of trigger keywords
+            "instruct": str,           # Full SKILL.md content
+            "has_scripts": bool,       # Whether scripts/ directory exists
         }
     """
     skill_md = skill_dir / "SKILL.md"
@@ -26,7 +26,7 @@ def parse_skill_md(skill_dir: Path) -> dict:
 
     raw = skill_md.read_text(encoding="utf-8", errors="replace")
 
-    # 提取前件 YAML
+    # Extract frontmatter YAML
     name = skill_dir.name
     description = ""
     frontmatter_end = 0
@@ -37,20 +37,20 @@ def parse_skill_md(skill_dir: Path) -> dict:
             frontmatter_end = end_match.end() + 3
             frontmatter = raw[3:frontmatter_end - 3].strip()
 
-            # 提取 name
+            # Extract name
             name_match = re.search(r"^name:\s*(.+)$", frontmatter, re.MULTILINE)
             if name_match:
                 name = name_match.group(1).strip().strip('"').strip("'")
 
-            # 提取 description/triggers
+            # Extract description/triggers
             desc_match = re.search(r"^description:\s*(.+)$", frontmatter, re.MULTILINE)
             if desc_match:
                 description = desc_match.group(1).strip().strip('"').strip("'")
 
-    # 正文（前件之后的所有内容）
+    # Content (everything after frontmatter)
     instruct = raw[frontmatter_end:].strip() if frontmatter_end > 0 else raw.strip()
 
-    # �?description 中提取关键词
+    # Extract keywords from description
     triggers = extract_triggers(description, name)
 
     return {
@@ -64,33 +64,33 @@ def parse_skill_md(skill_dir: Path) -> dict:
 
 def extract_triggers(description: str, fallback_name: str) -> list[str]:
     """
-    �?description 中提取触发关键词�?
-    策略：取引号内的短语 + 文件扩展�?+ 核心动词
+    Extract trigger keywords from description
+    Strategy: phrases in quotes + file extensions + core verbs
     """
     triggers = []
 
-    # 引号内的短语
+    # Phrases in quotes
     quoted = re.findall(r'"([^"]+)"', description)
     for q in quoted:
-        # 把引号短语拆成词
+        # Split quoted phrases into words
         words = [w.strip().lower() for w in q.replace(",", " ").split()]
         triggers.extend(w for w in words if len(w) > 2 and w not in triggers)
 
-    # 文件扩展�?
+    # File extensions
     exts = re.findall(r'\.(\w+)["\s,.)]', description)
     for ext in exts:
         ext_clean = ext.lower()
         if f".{ext_clean}" not in triggers:
             triggers.append(f".{ext_clean}")
 
-    # 核心动词/名词（从 description 中以大写开头的词）
+    # Core verbs/nouns (words starting with uppercase from description)
     cap_words = re.findall(r'\b([A-Z][a-z]+|[A-Z]{2,})\b', description)
     for cw in cap_words:
         cw_lower = cw.lower()
         if cw_lower not in triggers and len(cw) > 2:
             triggers.append(cw_lower)
 
-    # 去重 + 清理 + 按长度排�?
+    # Deduplicate + clean + sort by length
     cleaned = []
     for t in triggers:
         t = t.strip().strip("\\").strip(",").strip(".").strip('"').strip("'").strip()
@@ -104,10 +104,10 @@ def extract_triggers(description: str, fallback_name: str) -> list[str]:
 
 def match_skills(user_message: str, skill_metas: list[dict], max_skills: int = 3) -> list[dict]:
     """
-    将用户消息与技能触发关键词匹配�?
+    Match user message with skill trigger keywords
 
-    返回:
-        按匹配度排序的技能元数据列表 [{name, triggers, instruct, ...}]
+    Returns:
+        List of skill metadata sorted by match score [{name, triggers, instruct, ...}]
     """
     msg_lower = user_message.lower()
     scored = []
@@ -116,9 +116,9 @@ def match_skills(user_message: str, skill_metas: list[dict], max_skills: int = 3
         score = 0
         for trigger in meta["triggers"]:
             if trigger in msg_lower:
-                # 长关键词匹配加分更多（更精确�?
+                # Longer keyword matches get more points (more precise)
                 score += len(trigger) * 2
-            # 也匹配单独的�?
+            # Also match individual words
             for word in msg_lower.split():
                 if trigger in word or word in trigger:
                     if len(word) > 2:

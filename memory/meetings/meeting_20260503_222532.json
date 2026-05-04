@@ -1,0 +1,13 @@
+{
+  "room_id": "meeting_20260503_222532",
+  "topic": "?????",
+  "agents": [
+    "codey"
+  ],
+  "status": "discussing",
+  "rounds": [],
+  "consensus": false,
+  "consensus_reason": "",
+  "artifacts": {},
+  "parent_room": ""
+}

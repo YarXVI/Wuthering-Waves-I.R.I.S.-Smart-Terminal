@@ -1,0 +1,18 @@
+[
+  {
+    "id": "aimis_1777821394.924529",
+    "agent_id": "aimis",
+    "type": "note",
+    "content": "测试",
+    "metadata": {},
+    "created_at": "2026-05-03T23:16:34.924529"
+  },
+  {
+    "id": "aimis_1777821471.813377",
+    "agent_id": "aimis",
+    "type": "note",
+    "content": "测试",
+    "metadata": {},
+    "created_at": "2026-05-03T23:17:51.813377"
+  }
+]

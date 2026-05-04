@@ -1,0 +1,36 @@
+{
+  "room_id": "meeting_20260503_221453",
+  "topic": "会议功能测试，所有人收到请回复 1，持续10轮",
+  "agents": [
+    "codey",
+    "scribe"
+  ],
+  "status": "developing",
+  "rounds": [
+    {
+      "round_number": 1,
+      "author": "codey",
+      "content": "1",
+      "type": "提案",
+      "timestamp": 1777817695.191234
+    },
+    {
+      "round_number": 2,
+      "author": "scribe",
+      "content": "1",
+      "type": "提案",
+      "timestamp": 1777817696.780597
+    },
+    {
+      "round_number": 3,
+      "author": "aimis",
+      "content": "1",
+      "type": "分析比较",
+      "timestamp": 1777817699.037734
+    }
+  ],
+  "consensus": true,
+  "consensus_reason": "所有参会者均回复了相同的「1」，表明团队在会议功能测试中达成一致，无分歧或风险。",
+  "artifacts": {},
+  "parent_room": ""
+}

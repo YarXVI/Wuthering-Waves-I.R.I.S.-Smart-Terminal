@@ -1,13 +1,12 @@
 """
-路由：项目室白板
+Router: Project Room Whiteboard
 """
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from pathlib import Path
 from datetime import datetime
-from agent_core.project_room.whiteboard import Whiteboard, EntryType
+from agent_core.project_room.whiteboard import Whiteboard, WhiteboardItem, whiteboards, get_whiteboard
 from server.ws_manager import manager as ws_manager
 from server._async_utils import fire_and_forget
 
@@ -15,7 +14,7 @@ router = APIRouter()
 
 
 class WhiteboardEntryRequest(BaseModel):
-    """添加白板条目"""
+    """Add whiteboard entry"""
     author: str = "user"
     type: str = "note"
     content: str
@@ -23,173 +22,51 @@ class WhiteboardEntryRequest(BaseModel):
     tags: list[str] = []
 
 
-# ⚠️ 重要：精确路径必须定义在参数化路径（/{room_id}）之前！
-# 否则 FastAPI 会把 "rooms" 当作 room_id 参数匹配
-
-# ── 精确路径（会议室管理�?────────────────────────
-
 @router.get("/whiteboard/rooms")
 def list_whiteboard_rooms():
-    """列出所有会议室（白板）"""
-    from agent_core.project_room.whiteboard import Whiteboard
-    storage_dir = Whiteboard._get_storage_dir_static()
+    """List all meeting rooms (whiteboards)"""
     rooms = []
-    if storage_dir and storage_dir.exists():
-        for f in sorted(storage_dir.glob("*.json"), reverse=True):
-            room_id = f.stem
-            try:
-                wb = Whiteboard.create_or_load(room_id)
-                last_ts = max((e.timestamp for e in wb.entries), default=0)
-                rooms.append({
-                    "room_id": room_id,
-                    "entry_count": len(wb.entries),
-                    "last_updated": last_ts,
-                })
-            except Exception:
-                rooms.append({"room_id": room_id, "entry_count": 0, "last_updated": 0})
-    return {"rooms": rooms}
+    for room_id, wb in whiteboards.items():
+        items = wb.get_items()
+        rooms.append({
+            "room_id": room_id,
+            "entry_count": len(items),
+            "items": items,
+        })
+    return {"rooms": rooms, "total": len(rooms)}
 
 
-# ── 参数化路径（白板内容读写�?────────────────────
-
-@router.get("/whiteboard/{room_id}")
-def get_whiteboard(room_id: str):
-    """获取白板全部内容"""
-    wb = Whiteboard.create_or_load(room_id)
-    return {"room_id": room_id, "entries": [e.to_dict() for e in wb.entries]}
-
-
-@router.get("/whiteboard/{room_id}/summary")
-def get_whiteboard_summary(room_id: str, max_entries: int = 30):
-    """获取白板摘要文本"""
-    wb = Whiteboard.create_or_load(room_id)
-    if not wb.entries:
-        return {"room_id": room_id, "summary": "(白板为空)", "entry_count": 0}
-    summary = wb.summarize(max_entries=max_entries)
-    return {"room_id": room_id, "summary": summary, "entry_count": len(wb.entries)}
-
-
-@router.get("/whiteboard/{room_id}/events")
-def get_recent_events(room_id: str, count: int = 10):
-    """获取最近事�?""
-    wb = Whiteboard.create_or_load(room_id)
-    events = wb.get_recent_events(count=count)
-    return {"room_id": room_id, "events": [e.to_dict() for e in events]}
-
-
-@router.post("/whiteboard/{room_id}")
-def add_to_whiteboard(room_id: str, req: WhiteboardEntryRequest):
-    """添加白板条目"""
-    wb = Whiteboard.create_or_load(room_id)
-
-    try:
-        entry_type = EntryType(req.type)
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid type: {req.type}")
-
-    entry = wb.add(
-        author=req.author,
-        entry_type=entry_type,
-        content=req.content,
-        assigned_to=req.assigned_to,
-        tags=req.tags,
-    )
-    wb.save()
-
-    # WebSocket 实时推�?
-    fire_and_forget(ws_manager.broadcast(room_id, {
-        "type": "entry_added",
-        "entry": entry.to_dict(),
-    }))
-
-    return {"entry": entry.to_dict()}
-
-
-# ── 白板搜索 ────────────────────────────────────
-
-@router.get("/whiteboard/{room_id}/search")
-def search_whiteboard(room_id: str, q: str = ""):
-    """在白板中搜索条目"""
-    wb = Whiteboard.create_or_load(room_id)
-    if not q.strip():
-        return {"room_id": room_id, "entries": [e.to_dict() for e in wb.entries]}
-    results = wb.search(q.strip())
-    return {"room_id": room_id, "entries": [e.to_dict() for e in results]}
-
-
-# ── 白板统计 ────────────────────────────────────
-
-# ── 任务状态更�?──────────────────────────────
-
-class StatusUpdateRequest(BaseModel):
-    resolved: bool
-    assigned_to: str = ""
-
-
-@router.put("/whiteboard/{room_id}/{entry_id}/status")
-def update_task_status(room_id: str, entry_id: str, req: StatusUpdateRequest):
-    """更新任务条目的状态（完成/未完成）和负责人"""
-    wb = Whiteboard.create_or_load(room_id)
-    entry = wb.get(entry_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail="Entry not found")
-    wb.update(entry_id, resolved=req.resolved)
-    if req.assigned_to:
-        wb.update(entry_id, assigned_to=req.assigned_to)
-    wb.save()
-    return {"entry": entry.to_dict()}
-
-
-# ── 全局任务看板 ──────────────────────────────
-
-@router.get("/tasks")
-def list_all_tasks(status: str = "", assignee: str = ""):
-    """列出所有会议室中的 TASK 条目（全局任务看板�?""
-    from agent_core.project_room.whiteboard import Whiteboard
-    storage_dir = Whiteboard._get_storage_dir_static()
-    tasks = []
-    if storage_dir and storage_dir.exists():
-        for f in sorted(storage_dir.glob("*.json"), reverse=True):
-            room_id = f.stem
-            try:
-                wb = Whiteboard.create_or_load(room_id)
-                for e in wb.entries:
-                    if e.type.value != "task":
-                        continue
-                    if status and ((status == "open" and e.resolved) or
-                                   (status == "done" and not e.resolved)):
-                        continue
-                    if assignee and e.assigned_to != assignee:
-                        continue
-                    tasks.append({
-                        "entry_id": e.entry_id,
-                        "room_id": room_id,
-                        "author": e.author,
-                        "content": e.content,
-                        "assigned_to": e.assigned_to,
-                        "resolved": e.resolved,
-                        "timestamp": e.timestamp,
-                        "tags": e.tags,
-                    })
-            except Exception:
-                pass
-    return {"tasks": sorted(tasks, key=lambda t: t["timestamp"], reverse=True)}
-
-
-@router.get("/whiteboard/{room_id}/stats")
-def whiteboard_stats(room_id: str):
-    """白板统计信息"""
-    wb = Whiteboard.create_or_load(room_id)
-    from collections import Counter
-    type_count = Counter(e.type.value for e in wb.entries)
-    author_count = Counter(e.author for e in wb.entries)
-    unresolved_issues = len(wb.get_unresolved_issues())
-    unfinished_tasks = len(wb.get_unfinished_tasks())
+@router.get("/whiteboard/rooms/{room_id}")
+def get_whiteboard_room(room_id: str):
+    """Get whiteboard room details"""
+    wb = get_whiteboard(room_id)
+    items = wb.get_items()
     return {
         "room_id": room_id,
-        "total_entries": len(wb.entries),
-        "by_type": dict(type_count),
-        "by_author": dict(author_count),
-        "unresolved_issues": unresolved_issues,
-        "unfinished_tasks": unfinished_tasks,
+        "entry_count": len(items),
+        "items": items,
     }
+
+
+@router.post("/whiteboard/rooms/{room_id}/items")
+def add_whiteboard_item(room_id: str, req: WhiteboardEntryRequest):
+    """Add item to whiteboard"""
+    wb = get_whiteboard(room_id)
+    item_id = wb.add_item(req.type, req.content, req.author)
+    return {"success": True, "item_id": item_id}
+
+
+@router.put("/whiteboard/rooms/{room_id}/items/{item_id}")
+def update_whiteboard_item(room_id: str, item_id: str, req: WhiteboardEntryRequest):
+    """Update whiteboard item"""
+    wb = get_whiteboard(room_id)
+    success = wb.update_item(item_id, req.content)
+    return {"success": success}
+
+
+@router.delete("/whiteboard/rooms/{room_id}/items/{item_id}")
+def delete_whiteboard_item(room_id: str, item_id: str):
+    """Delete whiteboard item"""
+    wb = get_whiteboard(room_id)
+    success = wb.delete_item(item_id)
+    return {"success": success}

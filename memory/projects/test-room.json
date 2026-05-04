@@ -1,0 +1,26 @@
+{
+  "room_id": "test-room",
+  "entries": [
+    {
+      "entry_id": "e_20260503_231634_0000",
+      "author": "user",
+      "type": "issue",
+      "content": "测试问题",
+      "timestamp": 1777821394.75227,
+      "resolved": false,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_231750_0001",
+      "author": "user",
+      "type": "issue",
+      "content": "测试问题",
+      "timestamp": 1777821470.241238,
+      "resolved": false,
+      "assigned_to": "",
+      "tags": []
+    }
+  ],
+  "updated_at": "2026-05-03T23:17:50.241238"
+}

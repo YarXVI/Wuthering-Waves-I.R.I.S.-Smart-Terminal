@@ -1,7 +1,6 @@
 """
-路由：聊�?& Agent 管理
+Router: Chat & Agent Management
 """
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -16,212 +15,99 @@ router = APIRouter()
 
 
 class ChatRequest(BaseModel):
+    """Chat request"""
     message: str
     agent_id: str = "iris"
 
 
 class ChatResponse(BaseModel):
-    reply: str
-    model: str
+    """Chat response"""
+    response: str
+    agent_id: str
+    tool_calls: Optional[list] = None
+
+
+class StreamChatRequest(BaseModel):
+    """Streaming chat request"""
+    message: str
     agent_id: str = "iris"
-    agent_name: str = ""
 
 
-class ResetRequest(BaseModel):
-    agent_id: str = "iris"
-
-
-class RegisterAgentRequest(BaseModel):
-    """注册新同事的请求�?""
-    id: str
-    name: str
-    title: str
-    description: str
-
-
-@router.post("/agents")
-def register_agent(req: RegisterAgentRequest):
-    """
-    运行时注册一个新的同事�?
-    新同事注册后，所有现�?Agent 会自动感知到 TA�?
-    同时持久化到 agents.json�?
-    """
-    if manager.get_profile(req.id):
-        raise HTTPException(status_code=409, detail=f"Agent '{req.id}' already exists")
-
-    # 构建系统提示�?
-    system_prompt = (
-        f"你叫「{req.name}」，是办公室的{req.title}。\n\n"
-        f"## 可用工具\n"
-        f"- search_local_files: 在本地文件中搜索关键词\n"
-        f"- read_file_content: 读取指定文件的完整内容\n"
-        f"- call_agent: 向其他同事发送消息\n\n"
-        f"## 工作方式\n"
-        f"1. {req.description}\n"
-        f"2. 如果需要查阅资料，使用工具搜索和读取本地文件\n"
-        f"3. 如果任务需要其他同事的专业配合，用 call_agent 联系他们\n\n"
-        f"注意：不要使�?emoji 符号�?
-    )
-
-    profile = AgentProfile(
-        id=req.id,
-        name=req.name,
-        emoji="\U0001f916",
-        title=req.title,
-        system_prompt=system_prompt,
-        tool_names=["search_local_files", "read_file_content", "call_agent"],
-    )
-
-    manager.register_agent(profile)
-    # 持久化到 agents.json
-    agents = load_agents()
-    agents[profile.id] = profile
-    save_agents(agents)
-    # register_agent 会自动通知所有现�?Agent 刷新同事列表
-
-    # 获取注册后的完整同事列表
-    colleagues = [
-        {"id": p.id, "name": p.name, "title": p.title, "status": p.status.value}
-        for p in manager.profiles.values()
-        if p.id != req.id
-    ]
-
-    return {
-        "status": "ok",
-        "agent": {
-            "id": profile.id,
-            "name": profile.name,
-            "title": profile.title,
-        },
-        "notified_agents": len(manager.profiles) - 1,
-        "your_colleagues": colleagues,
-    }
-
-
-@router.post("/agents/refresh-colleagues")
-def refresh_colleagues():
-    """
-    手动刷新所�?Agent 的同事感知列表�?
-    当检测到同事状态异常或新增 Agent 后未自动同步时使用�?
-    """
-    def _count_colleagues(system_prompt: str) -> int:
-        """安全地计算同事数�?""
-        if not system_prompt or "## 你的同事" not in system_prompt:
-            return 0
-        parts = system_prompt.split("## 你的同事")
-        if len(parts) < 2:
-            return 0
-        return len([p for p in parts[1].split("\n- ") if p.strip()])
-
-    # 使用公开接口获取 Agent 列表
-    agents = manager.list_agents()
-    
-    # 记录刷新前的同事数量
-    before = {}
-    for agent_info in agents:
-        aid = agent_info["id"]
-        agent = manager.get_agent(aid)
-        if agent:
-            before[aid] = _count_colleagues(agent.system_prompt)
-
-    # 执行刷新
-    manager._refresh_all_colleagues()
-
-    # 记录刷新后的同事数量
-    after = {}
-    for agent_info in agents:
-        aid = agent_info["id"]
-        agent = manager.get_agent(aid)
-        if agent:
-            after[aid] = _count_colleagues(agent.system_prompt)
-
-    # 构建返回结果
-    colleague_counts = {}
-    for agent_info in agents:
-        aid = agent_info["id"]
-        name = agent_info["name"]
-        colleague_counts[name] = after.get(aid, 0)
-
-    return {
-        "status": "ok",
-        "refreshed_agents": len(agents),
-        "colleague_counts": colleague_counts,
-    }
+@router.post("/chat/stream")
+async def stream_chat(req: StreamChatRequest):
+    """Streaming chat endpoint"""
+    raise HTTPException(status_code=501, detail="Streaming not implemented")
 
 
 @router.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
-    """向指�?Agent 发送消息（支持 MemRAG 记忆增强�?""
-    if not req.message.strip():
-        return ChatResponse(reply="Please enter a message.", model=config.openai_model)
-
-    profile = manager.get_profile(req.agent_id)
+async def chat(req: ChatRequest):
+    """Send message and get response"""
+    if not req.message or not req.message.strip():
+        raise HTTPException(status_code=400, detail="Message is required")
+    if not req.agent_id:
+        req.agent_id = "iris"
+    profile = manager.profiles.get(req.agent_id)
     if not profile:
         raise HTTPException(status_code=404, detail=f"Agent '{req.agent_id}' not found")
-
     try:
-        # MemRAG: 注入记忆上下文（如果启用�?
-        runtime = manager.get_agent(req.agent_id)
-        if runtime and memrag_config.enabled:
-            enriched = pipeline.enrich_prompt(
-                req.agent_id, req.message, profile.system_prompt,
+        agent = manager.get_agent(req.agent_id)
+        if agent:
+            response = agent.chat(req.message)
+            return ChatResponse(
+                response=response or "No response",
+                agent_id=req.agent_id,
+                tool_calls=None,
             )
-            runtime.set_temporary_prompt(enriched)
-
-        reply = manager.chat(req.agent_id, req.message)
-
-        # MemRAG: 索引本次交互
-        if memrag_config.enabled:
-            pipeline.index_interaction(req.agent_id, req.message, reply)
-
-        return ChatResponse(
-            reply=reply,
-            model=config.openai_model,
-            agent_id=req.agent_id,
-            agent_name=profile.name,
-        )
-
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        else:
+            raise HTTPException(status_code=500, detail="Failed to get agent instance")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)[:200]}")
+        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
 
 
-@router.post("/reset/{agent_id}")
-def reset_agent(agent_id: str):
-    """重置指定 Agent 的对�?""
-    manager.reset_agent(agent_id)
-    return {"status": "ok", "agent_id": agent_id}
+@router.get("/chat/history/{agent_id}")
+def get_chat_history(agent_id: str, limit: int = 50):
+    """Get chat history for agent"""
+    profile = manager.profiles.get(agent_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
+    agent = manager.get_agent(agent_id)
+    if agent:
+        history = getattr(agent, 'history', [])
+        return {
+            "agent_id": agent_id,
+            "messages": history[-limit:] if history else [],
+            "total": len(history) if history else 0,
+        }
+    return {
+        "agent_id": agent_id,
+        "messages": [],
+        "total": 0,
+    }
 
 
-@router.post("/reset")
-def reset_all():
-    """重置所�?Agent"""
-    manager.reset_all()
-    return {"status": "ok"}
+@router.delete("/chat/history/{agent_id}")
+def clear_chat_history(agent_id: str):
+    """Clear chat history for agent"""
+    if agent_id == "iris":
+        raise HTTPException(status_code=403, detail="Cannot clear iris history")
+    profile = manager.profiles.get(agent_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
+    agent = manager.get_agent(agent_id)
+    if agent and hasattr(agent, 'history'):
+        agent.history = []
+    return {"message": f"History cleared for agent '{agent_id}'"}
 
 
-@router.post("/agents/{agent_id}/new-session")
-def new_agent_session(agent_id: str):
-    """
-    为指�?Agent 开启全新会话�?
-    当前对话会自动存档（带时间戳），不会丢失�?
-    """
-    try:
-        return manager.new_agent_session(agent_id)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-
-
-@router.get("/agents/{agent_id}/archived-sessions")
-def list_archived_sessions(agent_id: str):
-    """列出指定 Agent 的历史存档会�?""
-    from agent_core.memory.session_store import list_archived_sessions as las
-    return {"archived_sessions": las(agent_id)}
-
-
-@router.get("/sessions")
-def list_sessions():
-    """列出所有会�?""
-    from agent_core.memory.session_store import list_sessions as ls
-    return {"sessions": ls()}
+@router.post("/chat/reset/{agent_id}")
+def reset_chat(agent_id: str):
+    """Reset agent session"""
+    if agent_id == "iris":
+        raise HTTPException(status_code=403, detail="Cannot reset iris session")
+    profile = manager.profiles.get(agent_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
+    agent = manager.get_agent(agent_id)
+    if agent and hasattr(agent, 'history'):
+        agent.history = []
+    return {"message": f"Agent '{agent_id}' session reset"}

@@ -1,0 +1,22 @@
+{
+  "room_id": "meeting_20260503_231051",
+  "topic": "API 功能测试会议",
+  "agents": [
+    "codey",
+    "scribe"
+  ],
+  "status": "completed",
+  "rounds": [
+    {
+      "round_number": 1,
+      "author": "codey",
+      "content": "## 议题评估\n\n本次会议主题是\"API 功能测试会议\"，属于**情况C — 技术讨论型**，需要提出具体的技术方案和分析。\n\n---\n\n## 发言内容\n\n针对API功能测试，我提出以下分层测试方案，供团队讨论：\n\n### 1. 测试策略：分层覆盖\n\n- **单元测试**：测试独立的API处理函数或业务逻辑，例如输入校验、数据转换、错误码生成。可用 pytest（Python）或 Jest（Node.js），mock 掉数据库和外部服务。\n- **集成测试**：测试API与数据库、缓存、消息队列的真实交互。重点验证数据写入/读取的一致性和事务回滚。\n- **端到端测试**：模拟真实客户端调用，覆盖完整请求链路（网关 → 服务 → 数据层）。推荐使用 Postman Collection + Newman 进行持续集成，或编写脚本用 requests/axios 自动化。\n\n### 2. 核心关注点\n\n- **正常路径**：每个端点按文档返回正确的状态码、响应体结构、字段类型。\n- **异常路径**：缺失必填参数、参数类型错误、越界值、鉴权失败、资源不存在等，返回符合规范的错误信息（如 RFC 7807 Problem Details）。\n- **边界条件**：分页参数（offset/limit 极值）、长字符串、特殊字符（SQL注入/XSS测试）、幂等性（如重试请求返回相同结果）。\n- **数据一致性**：POST 创建后，GET 能立即读到；PUT/PATCH 更新后，后续查询反映最新状态。\n\n### 3. 推荐工具与框架\n\n- **Python 栈**：pytest + requests + pytest-html（报告），配合 schemathesis 自动生成边界测试用例。\n- **Node.js 栈**：Jest + supertest + jest-html-reporter，可用 openapi-enforcer 校验响应符合 OpenAPI spec。\n- **契约测试**：如果涉及微服务间API调用，引入 Pact 或 Spring Cloud Contract，避免上下游联调阻塞。\n\n### 4. 优势与局限\n\n**优势**：\n- 自动化测试可嵌入 CI/CD，每次提交跑全量回归，快速发现回归缺陷。\n- 分层策略让问题定位更精准：单元测试定位到函数，集成测试定位到数据层，端到端测试定位到链路。\n\n**局限**：\n- 需要维护测试数据（如隔离的测试数据库或 mock 数据），否则测试间会互相污染。\n- 端到端测试运行时间长，不适合在每次提交都跑全量，建议分 PR 跑关键路径，或设定超时阈值。\n- 若 API 文档频繁变动，测试用例需同步更新，否则容易产生误报。\n\n### 5. 后续协作建议\n\n需要小文一起确定以下事项：\n- 当前API是否有完整的 OpenAPI/Swagger 文档？如果没有，我们需优先补全文档作为测试依据。\n- 测试环境的部署方式（Docker Compose 还是独立 staging 环境）？\n- 测试数据的管理策略（每次重置数据库，还是使用种子数据快照）？\n\n（注：如果小文未到场，我们可以先整理文档后再讨论。）",
+      "type": "提案",
+      "timestamp": 1777821067.145005
+    }
+  ],
+  "consensus": false,
+  "consensus_reason": "用户主动终止讨论",
+  "artifacts": {},
+  "parent_room": ""
+}

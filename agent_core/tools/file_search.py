@@ -1,83 +1,112 @@
 """
-文件搜索工具 �?按关键词搜索本地文件内容
+File search tools for agent
 """
 
 import os
-import fnmatch
-from agent_core.config import config
-
-
-def search_local_files(query: str, path: str = "", file_pattern: str = "*.md") -> str:
-    search_root = path or config.notes_dir
-    if not os.path.isdir(search_root):
-        return f"错误：路�?'{search_root}' 不存在或不可访问"
-
-    results = []
-    for root, dirs, files in os.walk(search_root):
-        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('__pycache__', 'node_modules', '.git')]
-        for fname in files:
-            if not fnmatch.fnmatch(fname, file_pattern):
-                continue
-            fpath = os.path.join(root, fname)
-            try:
-                with open(fpath, 'r', encoding='utf-8', errors='ignore') as f:
-                    content = f.read()
-                if query.lower() in content.lower():
-                    idx = content.lower().find(query.lower())
-                    start = max(0, idx - 50)
-                    end = min(len(content), idx + len(query) + 100)
-                    results.append({"file": fpath, "snippet": content[start:end]})
-            except Exception:
-                continue
-
-    results = results[:10]
-    if not results:
-        return f"未在 '{search_root}' 下找到包�?'{query}' 的文�?
-    output = [f"找到 {len(results)} 个匹配文件：\n"]
-    for r in results:
-        output.append(f"文件: {r['file']}")
-        output.append(f"   片段: ...{r['snippet']}...\n")
-    return "\n".join(output)
-
-
-def read_file_content(file_path: str) -> str:
-    if not os.path.isfile(file_path):
-        return f"错误：文�?'{file_path}' 不存�?
-    try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-            return f.read()
-    except Exception as e:
-        return f"读取文件出错: {e}"
+import re
+from pathlib import Path
+from typing import Optional
 
 
 FILE_SEARCH_TOOL = {
     "type": "function",
     "function": {
         "name": "search_local_files",
-        "description": "在本地笔�?文档中搜索关键词，返回匹配的文件路径和上下文片段",
+        "description": "Search for files matching a pattern in a directory",
         "parameters": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "搜索关键�?},
-                "path": {"type": "string", "description": "搜索路径（可选）"},
-                "file_pattern": {"type": "string", "description": "文件匹配模式，如 *.md，默�?*.md"}
+                "path": {
+                    "type": "string",
+                    "description": "Directory path to search in",
+                },
+                "pattern": {
+                    "type": "string",
+                    "description": "File name pattern to match (supports * wildcard)",
+                },
             },
-            "required": ["query"]
-        }
-    }
+            "required": ["path", "pattern"],
+        },
+    },
 }
+
 
 FILE_READER_TOOL = {
     "type": "function",
     "function": {
         "name": "read_file_content",
-        "description": "读取指定文件的完整内�?,
+        "description": "Read content of a file",
         "parameters": {
             "type": "object",
             "properties": {
-                "file_path": {"type": "string", "description": "要读取的文件路径"}
+                "file_path": {
+                    "type": "string",
+                    "description": "Full path to the file to read",
+                },
+                "max_chars": {
+                    "type": "integer",
+                    "description": "Maximum number of characters to read",
+                    "default": 10000,
+                },
             },
-            "required": ["file_path"]
-        }
-    }
+            "required": ["file_path"],
+        },
+    },
 }
+
+
+def search_local_files(path: str, pattern: str) -> dict:
+    """
+    Search for files matching pattern in directory
+    """
+    try:
+        search_path = Path(path)
+        if not search_path.exists():
+            return {"success": False, "error": f"Path does not exist: {path}"}
+        if not search_path.is_dir():
+            return {"success": False, "error": f"Path is not a directory: {path}"}
+
+        # Convert pattern to regex
+        regex_pattern = pattern.replace(".", r"\.").replace("*", ".*").replace("?", ".")
+        regex = re.compile(regex_pattern, re.IGNORECASE)
+
+        matches = []
+        for item in search_path.rglob("*"):
+            if item.is_file() and regex.search(item.name):
+                matches.append({
+                    "name": item.name,
+                    "path": str(item),
+                    "size": item.stat().st_size,
+                })
+
+        return {
+            "success": True,
+            "matches": matches[:100],  # Limit to 100 results
+            "count": len(matches),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def read_file_content(file_path: str, max_chars: int = 10000) -> dict:
+    """
+    Read content of a file
+    """
+    try:
+        path = Path(file_path)
+        if not path.exists():
+            return {"success": False, "error": f"File does not exist: {file_path}"}
+        if not path.is_file():
+            return {"success": False, "error": f"Path is not a file: {file_path}"}
+
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read(max_chars)
+
+        return {
+            "success": True,
+            "content": content,
+            "file_path": str(path),
+            "truncated": len(content) >= max_chars,
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}

@@ -1,0 +1,16 @@
+{
+  "room_id": "meeting_20260503_222542",
+  "entries": [
+    {
+      "entry_id": "e_20260503_222542_0000",
+      "author": "system",
+      "type": "note",
+      "content": "会议开始 — 主题: ?????? — 参会: 爱弥斯, 小码, 小文",
+      "timestamp": 1777818342.863051,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    }
+  ],
+  "updated_at": "2026-05-03T22:25:42.863051"
+}

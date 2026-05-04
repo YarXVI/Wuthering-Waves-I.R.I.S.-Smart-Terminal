@@ -1,0 +1,56 @@
+{
+  "room_id": "meeting_20260503_223208",
+  "entries": [
+    {
+      "entry_id": "e_20260503_223208_0000",
+      "author": "system",
+      "type": "note",
+      "content": "会议开始 — 主题: 完整流程测试 — 参会: 爱弥斯, 小码, 小文",
+      "timestamp": 1777818728.264596,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_223214_0001",
+      "author": "codey",
+      "type": "note",
+      "content": "第1轮 — 小码 (提案):\n收到，确认。本议题为流程测试，已确认参会的角色和流程设定无误。",
+      "timestamp": 1777818734.007522,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_223217_0002",
+      "author": "scribe",
+      "type": "note",
+      "content": "第2轮 — 小文 (提案):\n收到，确认。本议题为流程测试，已确认参会角色和流程设定无误。",
+      "timestamp": 1777818737.961553,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_223219_0003",
+      "author": "aimis",
+      "type": "note",
+      "content": "第3轮 — 爱弥斯 (分析比较):\n收到，确认。本议题为流程测试，已确认参会角色和流程设定无误。",
+      "timestamp": 1777818739.843733,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    },
+    {
+      "entry_id": "e_20260503_223224_0004",
+      "author": "aimis",
+      "type": "note",
+      "content": "共识判断: 仍需继续讨论\n理由: 所有参会者仅确认流程设定无误，未提出任何实际方案或评审意见，缺乏实质性讨论和决策内容，无法认定达成共识。",
+      "timestamp": 1777818744.836424,
+      "resolved": true,
+      "assigned_to": "",
+      "tags": []
+    }
+  ],
+  "updated_at": "2026-05-03T22:32:24.836424"
+}

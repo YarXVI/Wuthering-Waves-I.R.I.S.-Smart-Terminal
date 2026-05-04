@@ -1,46 +1,73 @@
 """
-隔离工具 �?模块隔离加载的通用模式
+Isolation utilities for safe module loading
+Prevents entire application from crashing due to single module errors
 """
 
-import importlib
+import sys
 import traceback
+from typing import Any, Callable, Optional
 
 
-def safe_import(module_path: str):
+def safe_import(module_name: str) -> Optional[Any]:
     """
-    安全导入模块，失败时返回 None 而不是炸掉整个应用�?
-
-    用法:
-        mcp_module = safe_import("agent_core.mcp.mcp_client")
-        if mcp_module:
-            mcp_module.do_something()
+    Safely import a module, returning None on failure instead of crashing
     """
+    if module_name in sys.modules:
+        return sys.modules[module_name]
+
     try:
-        return importlib.import_module(module_path)
-    except Exception as e:
-        print(f"[SafeImport] Failed to load '{module_path}': {e}")
-        traceback.print_exc(limit=2)
+        __import__(module_name)
+        return sys.modules.get(module_name)
+    except Exception:
         return None
 
 
-def safe_call(func, default=None, *args, **kwargs):
+def safe_call(func: Callable, default: Any = None, *args, **kwargs) -> Any:
     """
-    安全调用函数，捕获所有异常�?
-
-    用法:
-        result = safe_call(mcp_manager.get_all_tools, default=[])
+    Safely call a function, returning default on failure instead of crashing
     """
     try:
         return func(*args, **kwargs)
-    except Exception as e:
-        print(f"[SafeCall] {getattr(func, '__name__', '?')} failed: {e}")
-        traceback.print_exc(limit=2)
-        return default
-
-
-def safe_getattr(obj, attr, default=None):
-    """安全获取属�?""
-    try:
-        return getattr(obj, attr, default)
     except Exception:
         return default
+
+
+def safe_getattr(obj: Any, name: str, default: Any = None) -> Any:
+    """
+    Safely get an attribute, returning default on failure
+    """
+    try:
+        return getattr(obj, name, default)
+    except Exception:
+        return default
+
+
+def safe_setattr(obj: Any, name: str, value: Any) -> bool:
+    """
+    Safely set an attribute, returning True on success
+    """
+    try:
+        setattr(obj, name, value)
+        return True
+    except Exception:
+        return False
+
+
+class IsolationContext:
+    """Context manager for isolated operations"""
+
+    def __init__(self, operation_name: str = "operation"):
+        self.operation_name = operation_name
+        self.error: Optional[Exception] = None
+        self.traceback_str: Optional[str] = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            self.error = exc_val
+            self.traceback_str = ''.join(traceback.format_exception(exc_type, exc_val, exc_tb))
+            print(f"[ISOLATION] {self.operation_name} failed: {exc_val}")
+            return True  # Suppress the exception
+        return False

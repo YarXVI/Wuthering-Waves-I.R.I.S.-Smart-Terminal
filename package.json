@@ -1,7 +1,7 @@
 {
   "name": "iris",
   "version": "0.2.0",
-  "description": "爱弥�?�?虚拟办公�?,
+  "description": "I.R.I.S. Virtual Office",
   "scripts": {
     "dev": "node scripts/dev.js",
     "build": "node scripts/build.js",
