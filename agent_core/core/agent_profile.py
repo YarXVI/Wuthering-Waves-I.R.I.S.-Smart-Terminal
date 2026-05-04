@@ -45,18 +45,4 @@ DEFAULT_AGENTS = [
         "system_prompt": "You are I.R.I.S., an intelligent virtual office assistant.",
         "description": "Main virtual office assistant",
     },
-    {
-        "id": "coder",
-        "name": "Code Assistant",
-        "model": "gpt-4o",
-        "system_prompt": "You are a coding assistant specializing in code review and debugging.",
-        "description": "Helps with programming tasks",
-    },
-    {
-        "id": "researcher",
-        "name": "Research Assistant",
-        "model": "gpt-4o",
-        "system_prompt": "You are a research assistant specializing in information gathering and analysis.",
-        "description": "Helps with research tasks",
-    },
 ]

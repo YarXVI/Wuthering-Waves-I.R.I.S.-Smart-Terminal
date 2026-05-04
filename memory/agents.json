@@ -1,3 +1,28 @@
 {
-  "agents": {}
+  "agents": {
+    "iris": {
+      "id": "iris",
+      "name": "I.R.I.S.",
+      "model": "gpt-4o",
+      "api_key": null,
+      "system_prompt": "You are I.R.I.S., an intelligent virtual office assistant.",
+      "description": "Main virtual office assistant"
+    },
+    "coder": {
+      "id": "coder",
+      "name": "Code Assistant",
+      "model": "gpt-4o",
+      "api_key": null,
+      "system_prompt": "You are a coding assistant specializing in code review and debugging.",
+      "description": "Helps with programming tasks"
+    },
+    "researcher": {
+      "id": "researcher",
+      "name": "Research Assistant",
+      "model": "gpt-4o",
+      "api_key": null,
+      "system_prompt": "You are a research assistant specializing in information gathering and analysis.",
+      "description": "Helps with research tasks"
+    }
+  }
 }
