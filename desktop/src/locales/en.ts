@@ -1,0 +1,645 @@
+export const en = {
+
+
+  app: {
+
+
+    name: 'AI MIS',
+
+
+    chat: 'Chat',
+
+
+    meeting: 'Meeting',
+
+
+    workflow: 'Workflow',
+
+
+    history: 'History',
+
+
+    usage: 'Usage',
+
+
+    settings: 'Settings',
+
+
+  },
+
+
+  chat: {
+
+
+    title: 'Chat',
+
+
+    placeholder: 'Type your message...',
+
+
+    send: 'Send',
+
+
+    newChat: 'New',
+
+
+    reset: 'Reset',
+
+
+    agents: 'Agents',
+
+
+    notifications: 'Notifications',
+
+
+    noNotifications: 'No notifications',
+
+
+    startConversation: 'Start a conversation',
+
+
+    typeBelow: 'Type your message below',
+
+
+    thinking: 'Thinking',
+
+
+    memragOn: 'MemRAG ON',
+
+
+    memragOff: 'MemRAG OFF',
+
+
+  },
+
+
+  meeting: {
+
+
+    title: 'Meeting',
+
+
+    newMeeting: 'Start New Meeting',
+
+
+    topic: 'Topic',
+
+
+    topicPlaceholder: 'Enter meeting topic...',
+
+
+    template: 'Template',
+
+
+    selectTemplate: 'Select a template',
+
+
+    suggestedAgents: 'Suggested Agents',
+
+
+    startMeeting: 'Start Meeting',
+
+
+    cancel: 'Cancel',
+
+
+    export: 'Export',
+
+
+    running: 'Running',
+
+
+    idle: 'Idle',
+
+
+    consensus: 'Consensus',
+
+
+    rounds: 'Round',
+
+
+    participants: 'Participants',
+
+
+    decisions: 'Decisions',
+
+
+    actionItems: 'Action Items',
+
+
+    summary: 'Summary',
+
+
+    noMeetings: 'No meetings yet',
+
+
+    selectMeeting: 'Select a meeting',
+
+
+    createFirst: 'Create your first meeting',
+
+
+    whiteboard: 'Whiteboard',
+
+
+    kanban: 'Kanban',
+
+
+    chooseTemplate: 'Choose template (optional) and enter topic:',
+
+
+    customNoTemplate: 'Custom (no template)',
+
+
+    recommended: 'Recommended',
+
+
+    start: 'Start',
+
+
+    inProgress: 'In progress...',
+
+
+    untitled: 'Untitled',
+
+
+    entries: 'entries',
+
+
+    total: 'Total',
+
+
+    completed: 'Completed',
+
+
+    consensusReached: 'Consensus',
+
+
+    meetingRoom: 'Meeting Room',
+
+
+    live: '🔴 Live',
+    reconnecting: '🔄 Reconnecting...',
+    offline: '⚠️ Offline',
+
+
+    note: 'Note',
+
+
+    issue: 'Issue',
+
+
+    task: 'Task',
+
+
+    code: 'Code',
+
+
+    discuss: 'Discuss',
+
+
+    summarizing: 'Summarizing...',
+
+
+    judge: 'Judge',
+
+
+    draw: 'Draw',
+
+
+    tasks: 'Tasks',
+
+
+    expand: 'Expand',
+
+
+    collapse: 'Collapse',
+
+
+    ready: 'Ready',
+
+
+    manageTemplates: 'Manage Templates',
+
+
+    editTemplate: 'Edit Template',
+
+
+    newTemplate: 'New Template',
+
+
+    templateName: 'Template name',
+
+
+    templateNamePlaceholder: 'Template name...',
+
+
+    description: 'Description',
+
+
+    descriptionPlaceholder: 'Description...',
+
+
+    defaultRounds: 'Default rounds',
+
+
+    agents: 'Agents',
+
+
+    update: 'Update',
+
+
+    create: 'Create',
+
+
+    edit: 'Edit',
+
+
+    delete: 'Delete',
+
+
+    apiUnavailable: 'Agent API Unavailable',
+
+
+    apiUnavailableDesc: 'Please ensure the backend service is properly started. Agent functionality requires connection to the backend API.',
+
+
+  },
+
+
+  workflow: {
+
+
+    title: 'Workflow',
+
+
+    orchestration: 'Agent Workflow Orchestration',
+
+
+    description: 'Chain multiple agents together to execute complex tasks sequentially',
+
+
+    workflowName: 'Workflow Name',
+
+
+    untitled: 'Untitled Workflow',
+
+
+    save: 'Save',
+
+
+    addStep: 'Add Step',
+
+
+    selectAgent: 'Select agent...',
+
+
+    taskDescription: 'Task description...',
+
+
+    add: 'Add',
+
+
+    execute: 'Execute Workflow',
+
+
+    clear: 'Clear',
+
+
+    loadWorkflow: 'Load Workflow',
+
+
+    activeSessions: 'Active Sessions',
+
+
+    archived: 'Archived',
+
+
+  },
+
+
+  usage: {
+
+
+    title: 'Usage',
+
+
+    monitor: 'API Usage Monitor',
+
+
+    description: 'Track token consumption and API calls over time',
+
+
+    last7Days: 'Last 7 Days',
+
+
+    export: 'Export JSON',
+
+
+    totalRequests: 'Total Requests',
+
+
+    promptTokens: 'Prompt Tokens',
+
+
+    completionTokens: 'Completion Tokens',
+
+
+    totalTokens: 'Total Tokens',
+
+
+    dailyBreakdown: 'Daily Breakdown (Last 7 Days)',
+
+
+    noData: 'No data available yet',
+
+
+  },
+
+
+  history: {
+
+
+    title: 'Conversation History',
+
+
+    description: 'Browse and search through archived agent conversations',
+
+
+    searchPlaceholder: 'Search by agent ID...',
+
+
+    export: 'Export JSON',
+
+
+    activeSessions: 'Active Sessions',
+
+
+    archived: 'Archived',
+
+
+    noActiveSessions: 'No active sessions',
+
+
+    selectAgent: 'Select an agent to view archived sessions',
+
+
+    view: 'View',
+
+
+    agent: 'Agent',
+
+
+    messages: 'Messages',
+
+
+    updated: 'Updated',
+
+
+    actions: 'Actions',
+
+
+  },
+
+
+  settings: {
+
+
+    title: 'Settings',
+
+
+    theme: 'Theme',
+
+
+    lightMode: 'Light Mode',
+
+
+    darkMode: 'Dark Mode',
+
+
+    language: 'Language',
+
+
+    selectLanguage: 'Select Language',
+
+
+    server: 'Server',
+
+
+    serverStatus: 'Server Status',
+
+
+    online: 'Online',
+
+
+    offline: 'Offline',
+
+
+    checking: 'Checking...',
+
+
+    about: 'About',
+
+
+    version: 'Version',
+
+
+    providers: 'Providers',
+
+
+    skills: 'Skills',
+
+
+    agents: 'Agents',
+
+
+    apiProviders: 'API Providers',
+
+
+    configureApi: 'Configure your LLM API providers. The active provider is used by agents.',
+
+
+    providerName: 'Provider Name',
+
+
+    setActive: 'Set Active',
+
+
+    active: 'ACTIVE',
+
+
+    type: 'Type',
+
+
+    baseUrl: 'Base URL',
+
+
+    apiKey: 'API Key',
+
+
+    model: 'Model',
+
+
+    addProvider: 'Add Provider',
+
+
+    saveProviders: 'Save Providers',
+
+
+    mcpDesc: 'MCP (Model Context Protocol) servers provide external tools and context to agents.',
+
+
+    noMcpServers: 'No MCP servers configured.',
+
+
+    mcpServerName: 'MCP Server Name',
+
+
+    command: 'Command',
+
+
+    args: 'Args',
+
+
+    addMcpServer: 'Add MCP Server',
+
+
+    saveMcp: 'Save MCP',
+
+
+    skillsDesc: 'Available skills found in the skills/ directory. Toggle to enable/disable.',
+
+
+    noSkills: 'No skills found in skills/ directory.',
+
+
+    enabled: 'ON',
+
+
+    disabled: 'OFF',
+
+
+    saved: 'Saved',
+
+
+    agentsDesc: 'Create and manage your team members. iris is always present and cannot be deleted. Each agent has a specialty description for automatic meeting matching.',
+
+
+    createNewAgent: 'Create New Agent',
+
+
+    agentName: 'Name',
+
+
+    agentTitle: 'Title',
+
+
+    agentSpecialty: 'Specialty',
+
+
+    agentEmoji: 'Emoji',
+
+
+    agentSystemPrompt: 'System Prompt',
+
+
+    optional: 'optional',
+
+
+    noSpecialty: 'No specialty set',
+
+
+    edit: 'Edit',
+
+
+    delete: 'Delete',
+
+
+    builtinLock: 'Built-in agent - cannot delete',
+
+
+    editAgent: 'Edit Agent',
+
+
+    cancel: 'Cancel',
+
+
+    saveChanges: 'Save Changes',
+
+
+    agentNameRequired: 'Agent name is required',
+
+
+    operationFailed: 'Operation failed',
+
+
+    deleteFailed: 'Failed to delete agent',
+
+
+    confirmDelete: 'Delete agent "{name}" ({id})? This cannot be undone.',
+
+
+    loadAgentsFailed: 'Failed to load agents',
+
+
+    agentAPINotAvailable: 'Agent API not available, please check if the backend service is running',
+
+
+  },
+
+
+  common: {
+
+
+    loading: 'Loading...',
+
+
+    error: 'Error',
+
+
+    success: 'Success',
+
+
+    confirm: 'Confirm',
+
+
+    cancel: 'Cancel',
+
+
+    save: 'Save',
+
+
+    delete: 'Delete',
+
+
+    edit: 'Edit',
+
+
+    close: 'Close',
+
+
+    retry: 'Retry',
+
+
+  },
+
+
+  status: {
+
+
+    idle: 'Idle',
+
+
+    thinking: 'Thinking',
+
+
+    working: 'Working',
+
+
+    error: 'Error',
+
+
+  },
+
+
+}

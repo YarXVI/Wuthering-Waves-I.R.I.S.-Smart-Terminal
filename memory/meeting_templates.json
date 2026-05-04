@@ -1,0 +1,52 @@
+{
+  "templates": {
+    "tech-review": {
+      "name": "技术评审",
+      "description": "代码审查、架构评审、技术方案讨论",
+      "suggested_agents": [
+        "codey"
+      ],
+      "default_rounds": 6
+    },
+    "planning": {
+      "name": "项目规划",
+      "description": "需求分析、任务拆解、排期讨论",
+      "suggested_agents": [
+        "codey",
+        "scribe"
+      ],
+      "default_rounds": 8
+    },
+    "postmortem": {
+      "name": "复盘会议",
+      "description": "项目回顾、问题复盘、改进措施",
+      "suggested_agents": [
+        "codey",
+        "scribe"
+      ],
+      "default_rounds": 6
+    },
+    "brainstorm": {
+      "name": "头脑风暴",
+      "description": "创意发散、方案调研、可行性分析",
+      "suggested_agents": [
+        "codey",
+        "scribe"
+      ],
+      "default_rounds": 10
+    },
+    "tpl_24321cbf": {
+      "name": "测试",
+      "description": "测试模板",
+      "suggested_agents": [],
+      "default_rounds": 6
+    },
+    "tpl_8e0c6084": {
+      "name": "测试",
+      "description": "测试模板",
+      "suggested_agents": [],
+      "default_rounds": 6
+    }
+  },
+  "version": 1
+}

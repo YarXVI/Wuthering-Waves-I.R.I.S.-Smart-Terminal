@@ -1,0 +1,16 @@
+{
+  "name": "iris",
+  "version": "0.2.0",
+  "description": "I.R.I.S. Virtual Office",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "build": "node scripts/build.js",
+    "build:frontend": "cd desktop && npm run build",
+    "build:electron": "cd desktop && npm run electron:build",
+    "build:server": "pyinstaller build_server.spec"
+  },
+  "keywords": ["ai", "agents", "virtual-office"],
+  "author": "",
+  "license": "MIT",
+  "private": true
+}

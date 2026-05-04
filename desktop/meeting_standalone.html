@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>I.R.I.S. Smart Meeting Room</title>
+<style>
+:root {
+  --bg-base:#0f0f1a; --bg-surface:#13132a; --bg-hover:#1a1a3a;
+  --bg-active:#1e1e45; --bg-inset:#0a0a1a;
+  --border:#1e1e3f; --border-hover:#2a2a5a;
+  --accent:#4f46e5; --accent-light:#818cf8; --accent-border:rgba(129,140,248,0.27);
+  --text:#e0e0e0; --text-sec:#aaa; --text-dim:#888; --text-faint:#666; --text-dark:#444;
+  --green:#34d399; --red:#f87171; --yellow:#fbbf24; --blue:#60a5fa; --pink:#f472b6;
+  --c-iris:#4f46e5; --c-codey:#059669; --c-scribe:#d97706; --c-system:#f59e0b;
+  --sidebar-w:260px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  background:var(--bg-base);
+  color:var(--text);
+  min-height:100vh;
+}
+#root{min-height:100vh}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="/src/meeting_standalone.tsx"></script>
+</body>
+</html>
