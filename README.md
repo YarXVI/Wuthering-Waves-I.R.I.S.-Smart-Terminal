@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" alt="Python">
   <img src="https://img.shields.io/badge/FastAPI-0.104-orange.svg" alt="FastAPI">
-  <img src="https://img.shields.io/badge/License-AGPLv3-blue.svg" alt="License">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
 </p>
 
 A production-ready agent framework built on onion architecture, featuring Lazy Context Materialization (LCM), Chinese Thinking Skill, and progressive skill disclosure.
@@ -168,11 +168,11 @@ LOG_LEVEL=INFO
 
 ## License
 
-This project is licensed under [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.html).
+This project is licensed under [MIT](LICENSE).
 
-- **Open source use**: Welcome under AGPLv3 terms
-- **Commercial use**: Contact shenshengtiantang@outlook.com for licensing
-- **Modification**: Modified versions must be open-sourced under AGPLv3
+- **Free to use**: For personal and commercial projects
+- **Modify and distribute**: Allowed with attribution
+- **Keep notice**: Original copyright notice must be retained
 
 ## Third-Party Acknowledgments
 
