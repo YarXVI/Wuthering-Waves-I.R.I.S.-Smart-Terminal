@@ -1,203 +1,183 @@
-# 鸣潮 I.R.I.S. 智能终端
+# I.R.I.S. Agent Core v2
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" alt="Python">
-  <img src="https://img.shields.io/badge/React-18.2-green.svg" alt="React">
   <img src="https://img.shields.io/badge/FastAPI-0.104-orange.svg" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Electron-28.3-purple.svg" alt="Electron">
   <img src="https://img.shields.io/badge/License-AGPLv3-blue.svg" alt="License">
 </p>
 
-> **⚠️ 第三方声明**：
-> 本项目名称中涉及的"鸣潮"及"I.R.I.S."等商标、角色名称，其知识产权均归库洛游戏（Kuro Game）所有。本项目的使用仅限于个人兴趣和同人创作，无意与官方产生任何混淆，亦不代表官方立场。
-> 如相关权利人认为本项目构成侵权，请联系我进行更名或下架处理。
-> 
-> **代码许可**：除上款所述的第三方名称外，本项目中所有撰写的代码，均依据 [GNU Affero 通用公共许可证第3版（AGPLv3）](https://www.gnu.org/licenses/agpl-3.0.html) 进行许可。您可以自由地使用、修改和分发这些代码，但须遵守AGPLv3的全部条款。
+A production-ready agent framework built on onion architecture, featuring Lazy Context Materialization (LCM), Chinese Thinking Skill, and progressive skill disclosure.
 
-> 🏢 **I.R.I.S.** 是您的虚拟办公室智能助手。基于多Agent协作系统，支持智能会议、知识管理、任务协作，让AI成为您真正的同事。
+## Core Capabilities
 
-[English](README_en.md) | 中文
+### 1. LCM (Lazy Context Materialization)
+- **Chunk-based context storage** with LRU caching and JSONL persistence
+- **Sentinel detection** for on-demand context loading via `[NEED_CHUNK:xxx]` markers
+- **State machine driven** context injection (IDLE → GENERATING → WAITING_CHUNK → RESUMING → COMPLETED)
+- **Content encoding layer** with pluggable encoders (Chinese Think, Identity, and extensible)
 
-## 特性
+### 2. Chinese Thinking Skill
+- **Native Chinese reasoning chains** with structured thinking output
+- **Metaphor enhancement** using Chinese cognitive patterns
+- **Dialectical thinking** support (thesis → antithesis → synthesis)
+- **Dual-mode integration**: standalone skill for ReAct loops + LCM encoding plugin
 
-### 🤖 多Agent协作
-- **内置Agent**: I.R.I.S.(管理)、小码(编程)、小文(写作)
-- **自定义Agent**: 无需编码即可创建专属助手
-- **Agent间协作**: 支持委托、顺序执行、并行执行多种模式
+### 3. Skill Engine
+- **Progressive disclosure levels** (Level 0/1/2) based on trust and usage
+- **Automatic skill distillation** from successful tool-call conversations
+- **Feedback-driven evolution** with versioning and performance tracking
+- **Keyword-based recommendation** engine for contextual skill matching
 
-### 🏛️ 智能会议室
-- **多Agent讨论**: 自动组织团队讨论，达成共识
-- **智能议程**: 自动分解任务，创建待办事项
-- **实时协作**: WebSocket实时更新，支持绘图和看板
-- **会议导出**: Markdown格式导出会议纪要
+### 4. Personality System
+- **Configurable agent personalities** with traits, values, behaviors, and boundaries
+- **LLM parameter modulation** per personality (temperature, max_tokens, formality)
+- **Built-in personas**: IRIS (friendly assistant), Pro (formal consultant), Muse (creative partner)
+- **Dynamic system prompt generation** from personality configuration
 
-### 🧠 MemRAG 记忆增强
-- **向量检索**: 基于语义的知识召回
-- **跨会话记忆**: Agent记住重要上下文
-- **可开关**: 按需启用/禁用记忆增强
+### 5. Memory Management
+- **Tiered memory architecture**: working, short-term, long-term
+- **Agent-isolated storage** with JSONL persistence
+- **User profile tracking** and importance-based retrieval
+- **Keyword search** across memory entries
 
-### 💻 现代化桌面应用
-- **Electron + React**: 原生桌面体验
-- **即时通讯**: 实时聊天界面
-- **多语言**: 中文/English
-- **本地存储**: 消息持久化到本地
+## Architecture
 
-### 🔌 开放API
-- **RESTful API**: 60+ 接口，完全开源
-- **WebSocket**: 实时消息推送
-- **易于集成**: 可接入现有系统
+```
+Onion Architecture:
+  4. Interfaces       - FastAPI routers (agents, skills, memory, personality, usage)
+  3. Application      - AgentService orchestration layer
+  2. Domain           - Core business logic (AgentRuntime, Personality, ChineseThinking)
+  1. Infrastructure   - Adapters (LCMEngine, SkillEngine, MemoryManager, ProviderRouter)
+```
 
-## 快速开始
+## Quick Start
 
-### 环境要求
-- Python 3.10+
-- Node.js 18+
-- npm 或 yarn
-
-### 1. 克隆项目
+### Installation
 
 ```bash
 git clone https://github.com/YarXVI/Wuthering-Waves-I.R.I.S.-Smart-Terminal.git
 cd Wuthering-Waves-I.R.I.S.-Smart-Terminal
-```
-
-### 2. 安装后端依赖
-
-```bash
 pip install -r agent_core/requirements.txt
 ```
 
-### 3. 配置环境变量
+### Basic Usage
 
-```bash
-cp .env.example .env
-# 编辑 .env 填入你的 API Key
+```python
+from agent_core.v2 import AgentService, ProviderConfig, Chunk, LCMEngine
+
+# Create service
+service = AgentService()
+service.provider.register(ProviderConfig(
+    name="default",
+    model="gpt-4o",
+    api_key="sk-...",
+))
+
+# Add LCM chunk
+service.lcm.store.add(Chunk(
+    chunk_id="auth_handler",
+    content="def login(): ...",
+    summary="Authentication handler",
+))
+
+# Chat with agent
+result = await service.chat(
+    agent_id="iris",
+    user_message="Review the authentication handler",
+)
+print(result.content)
 ```
 
-### 4. 启动后端服务
+### Enable Chinese Thinking
 
-```bash
-python -m server.main
-# 服务地址: http://127.0.0.1:8765
+```python
+from agent_core.v2 import AgentRuntime, RuntimeConfig
+
+runtime = AgentRuntime(
+    provider_router=provider,
+    memory_manager=memory,
+    skill_engine=skills,
+    config=RuntimeConfig(
+        enable_chinese_thinking=True,
+        chinese_thinking_depth="deep",
+    ),
+)
 ```
 
-### 5. 启动前端（开发模式）
-
-```bash
-cd desktop
-npm install
-npm run dev
-# 访问: http://localhost:5173
-```
-
-### 6. 构建桌面应用
-
-```bash
-# 开发调试
-npm run electron:dev
-
-# 构建安装包
-npm run electron:build
-```
-
-## 项目结构
+## Project Structure
 
 ```
-Wuthering-Waves-I.R.I.S.-Smart-Terminal/
-├── agent_core/           # 核心Agent引擎
-│   ├── core/            # Agent核心实现
-│   ├── collaboration/   # Agent协作逻辑
-│   ├── memrag/         # 记忆增强系统
-│   ├── memory/         # 会话记忆管理
-│   ├── project_room/   # 会议室逻辑
-│   ├── providers/      # LLM提供商
-│   ├── settings/       # 设置管理
-│   ├── skills_registry/# 技能注册
-│   ├── tools/          # 内置工具
-│   ├── utils/          # 工具函数
-│   └── workflow/       # 工作流引擎
-├── server/              # FastAPI服务
-│   └── routers/        # API路由模块
-├── desktop/             # Electron桌面应用
-│   └── src/
-│       ├── components/  # React组件
-│       ├── pages/      # 页面
-│       ├── hooks/      # 自定义Hooks
-│       ├── contexts/   # React上下文
-│       └── locales/    # 国际化
-├── tests/               # 测试文件
-├── docs/                # 文档
-├── scripts/             # 启动脚本
-└── config/              # 配置文件
+agent_core/v2/
+├── __init__.py              # Public API exports
+├── domain/                  # Core business logic
+│   ├── agent_runtime.py     # ReAct loop with LCM + Chinese Thinking
+│   ├── chinese_thinking.py  # ChineseThinkingSkill + ChineseThinkEncoding
+│   ├── execution_context.py # Immutable execution context
+│   ├── execution_result.py  # Standardized result with tool calls
+│   ├── lazy_context.py      # Lightweight shard-based LCM
+│   └── personality.py       # Personality system with built-in personas
+├── infrastructure/          # External adapters
+│   ├── chunk_store.py       # Chunk storage with LRU cache
+│   ├── content_encoding.py  # Pluggable encoding registry
+│   ├── lcm_engine.py        # Full LCM protocol with state machine
+│   ├── memory_manager.py    # Tiered memory management
+│   ├── memory_v2.py         # Agent-isolated memory store
+│   ├── provider_router.py   # LLM provider routing
+│   ├── sentinel_detector.py # Sentinel marker detection
+│   └── skill_engine.py      # Skill lifecycle management
+├── application/             # Use case layer
+│   └── agent_service.py     # High-level service API
+└── interfaces/              # API layer
+    ├── api_router.py        # Agent chat endpoints
+    ├── memory_router.py     # Memory management endpoints
+    ├── personality_router.py # Personality endpoints
+    ├── skills_router.py     # Skill execution endpoints
+    └── usage_router.py      # Usage tracking endpoints
 ```
 
-## API文档
+## API Endpoints
 
-启动服务后访问:
-- Swagger UI: http://127.0.0.1:8765/docs
-- ReDoc: http://127.0.0.1:8765/redoc
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/v2/agents/chat` | POST | Chat with an agent |
+| `/v2/agents/register` | POST | Register a new agent |
+| `/skills/list` | GET | List all skills |
+| `/skills/{id}/execute` | POST | Execute a skill |
+| `/memory/{agent_id}` | GET | Load agent memory |
+| `/personality/list` | GET | List personalities |
+| `/personality/{id}` | GET | Get personality details |
 
-### 主要API端点
+Full API documentation available at `/docs` when server is running.
 
-| 端点 | 方法 | 描述 |
-|------|------|------|
-| `/api/agents` | GET | 获取Agent列表 |
-| `/api/agents` | POST | 创建新Agent |
-| `/api/chat/chat` | POST | 与Agent对话 |
-| `/api/collaboration/call` | POST | 发起协作 |
-| `/api/meetings` | GET | 获取会议列表 |
-| `/api/meetings` | POST | 创建会议 |
-| `/api/memory/search` | POST | 搜索记忆 |
+## Configuration
 
-## 配置说明
-
-主要配置项（`.env`）:
+Key environment variables (`.env`):
 
 ```env
-# LLM配置
+# LLM Provider
 OPENAI_API_KEY=your_api_key_here
 OPENAI_BASE_URL=https://api.openai.com/v1
 
-# 服务配置
+# Service
 HOST=127.0.0.1
 PORT=8765
 
-# 日志级别
+# Logging
 LOG_LEVEL=INFO
 ```
 
-## 开发指南
+## License
 
-详见 [CONTRIBUTING.md](CONTRIBUTING.md)
+This project is licensed under [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.html).
 
-## 许可证
+- **Open source use**: Welcome under AGPLv3 terms
+- **Commercial use**: Contact shenshengtiantang@outlook.com for licensing
+- **Modification**: Modified versions must be open-sourced under AGPLv3
 
-本框架采用 [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.html) 开源许可。
+## Third-Party Acknowledgments
 
-- **开源使用**: 欢迎基于AGPLv3条款使用本框架进行开源开发
-- **闭源商用**: 如需闭源商用或获得商业支持，请联系: shenshengtiantang@outlook.com
-- **补充条款**: 如对本框架进行修改并重新发布，必须开源修改版本
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
+- [Pydantic](https://docs.pydantic.dev/) - Data validation
+- [LangChain](https://www.langchain.com/) - LLM application framework
 
-### 第三方代码
-
-本框架引入了以下开源组件，请注意各组件许可证的兼容性：
-
-| 组件 | 许可证 | 兼容性说明 |
-|------|--------|------------|
-| FastAPI | MIT | ✅ AGPLv3兼容 |
-| React | MIT | ✅ AGPLv3兼容 |
-| Electron | MIT | ✅ AGPLv3兼容 |
-| LangChain | MIT | ✅ AGPLv3兼容 |
-| Uvicorn | BSD | ✅ AGPLv3兼容 |
-| Pydantic | MIT | ✅ AGPLv3兼容 |
-
-> ⚠️ **注意**: 请避免混用 GPL-incompatible 的库导致法律风险。如有疑问，请联系上述邮箱。
-
-完整许可证文本请参阅 [LICENSE](LICENSE) 文件。
-
-## 致谢
-
-- [FastAPI](https://fastapi.tiangolo.com/) - 现代高效的Web框架
-- [React](https://reactjs.org/) - 组件化UI库
-- [Electron](https://electronjs.org/) - 跨平台桌面应用框架
-- [LangChain](https://www.langchain.com/) - LLM应用开发框架
+> **Disclaimer**: The names "Wuthering Waves" and "I.R.I.S." referenced in this project are intellectual properties of Kuro Game. This project is for personal interest and fan creation only.
