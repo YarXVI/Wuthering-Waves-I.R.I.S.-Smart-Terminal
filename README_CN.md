@@ -6,6 +6,8 @@
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
 </p>
 
+**I.R.I.S.** = **I**ntelligent **R**esponsive **I**ntegrated **S**ystem（智能响应式一体化系统）
+
 基于洋葱架构的量产级智能体框架，具备惰性上下文物化（LCM）、中文思考技能和渐进式技能披露能力。
 
 ## 核心能力
@@ -39,6 +41,11 @@
 - **智能体隔离存储**，JSONL 持久化
 - **用户画像追踪**，基于重要性的检索
 - **关键词搜索**，跨记忆条目检索
+
+## 相关项目
+
+- [lcm-prompt](https://github.com/YarXVI/lcm-prompt) —— 惰性上下文物化协议独立实现
+- [chinese-think-skills](https://github.com/YarXVI/chinese-think-skills) —— 中文思考技能独立模块
 
 ## 架构
 
@@ -179,5 +186,3 @@ LOG_LEVEL=INFO
 - [FastAPI](https://fastapi.tiangolo.com/) - 现代 Web 框架
 - [Pydantic](https://docs.pydantic.dev/) - 数据验证
 - [LangChain](https://www.langchain.com/) - LLM 应用框架
-
-> **免责声明**：本项目中引用的"鸣潮"和"I.R.I.S."名称均为库洛游戏的知识产权。本项目仅为个人兴趣和粉丝创作。

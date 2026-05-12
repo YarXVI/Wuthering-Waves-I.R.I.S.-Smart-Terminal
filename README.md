@@ -6,6 +6,8 @@
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
 </p>
 
+**I.R.I.S.** = **I**ntelligent **R**esponsive **I**ntegrated **S**ystem
+
 A production-ready agent framework built on onion architecture, featuring Lazy Context Materialization (LCM), Chinese Thinking Skill, and progressive skill disclosure.
 
 ## Core Capabilities
@@ -39,6 +41,11 @@ A production-ready agent framework built on onion architecture, featuring Lazy C
 - **Agent-isolated storage** with JSONL persistence
 - **User profile tracking** and importance-based retrieval
 - **Keyword search** across memory entries
+
+## Related Projects
+
+- [lcm-prompt](https://github.com/YarXVI/lcm-prompt) — Lazy Context Materialization protocol implementation
+- [chinese-think-skills](https://github.com/YarXVI/chinese-think-skills) — Chinese Thinking Skill standalone module
 
 ## Architecture
 
@@ -179,5 +186,3 @@ This project is licensed under [MIT](LICENSE).
 - [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
 - [Pydantic](https://docs.pydantic.dev/) - Data validation
 - [LangChain](https://www.langchain.com/) - LLM application framework
-
-> **Disclaimer**: The names "Wuthering Waves" and "I.R.I.S." referenced in this project are intellectual properties of Kuro Game. This project is for personal interest and fan creation only.
